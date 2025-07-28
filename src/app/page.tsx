@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -36,9 +37,16 @@ export default function DashboardPage() {
     const fetchLeads = async () => {
       try {
         const response = await fetch('/data/leads.json');
+        if (!response.ok) {
+          throw new Error('Failed to fetch leads');
+        }
         const rawData = await response.json();
-        const mappedLeads = rawData.map(mapRawLeadToLead);
-        setAllLeads(mappedLeads);
+        if (rawData && Array.isArray(rawData.leads)) {
+          const mappedLeads = rawData.leads.map(mapRawLeadToLead);
+          setAllLeads(mappedLeads);
+        } else {
+          throw new Error('Lead data is not in the expected format');
+        }
       } catch (error) {
         console.error('Failed to load leads:', error);
       }

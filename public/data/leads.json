@@ -1,78 +1,94 @@
 
-[
-  {
-    "company": "Innovatech Solutions", "industry": "Artificial Intelligence", "location": "Austin, TX",
-    "contactName": "Sophia Chen", "email": "sophia.chen@innovatech.com", "website": "https://example.com",
-    "description": "Pioneering AI-driven solutions for enterprise automation and efficiency."
-  },
-  {
-    "name": "QuantumLeap Analytics", "sector": "Data Science", "city": "Boston, MA",
-    "contact": { "name": "David Miller" }, "email": "david.miller@quantumleap.com", "website": "https://example.com",
-    "description": "Providing predictive analytics and machine learning models for the finance sector."
-  },
-  {
-    "companyName": "CyberSecure Inc.", "industry": "Cybersecurity", "location": "Reston, VA",
-    "contactName": "Emily White", "email": "emily.white@cybersecure.com", "website": "https://example.com",
-    "description": "Offering comprehensive security solutions to protect digital assets from evolving threats."
-  },
-  {
-    "company": "BioGenix Labs", "industry": "Biotechnology", "location": "San Diego, CA",
-    "contactName": "Dr. Alan Grant", "email": "alan.grant@biogenix.com", "website": "https://example.com",
-    "description": "Focused on genetic research and development of novel therapeutic treatments."
-  },
-  {
-    "name": "GreenShift Energy", "sector": "Renewable Energy", "city": "Denver, CO",
-    "contact": { "name": "Olivia Green" }, "email": "olivia.green@greenshift.com", "website": "https://example.com",
-    "description": "Developing sustainable energy solutions through solar and wind power innovations."
-  },
-  {
-    "companyName": "Nexus Robotics", "industry": "Robotics", "location": "Pittsburgh, PA",
-    "contactName": "Ben Carter", "email": "ben.carter@nexusrobotics.com", "website": "https://example.com",
-    "description": "Building advanced robotics for logistics and manufacturing automation."
-  },
-  {
-    "company": "HealthFirst Digital", "industry": "HealthTech", "location": "Nashville, TN",
-    "contactName": "Chloe Taylor", "email": "chloe.taylor@healthfirst.com", "website": "https://example.com",
-    "description": "Creating digital platforms to improve patient care and hospital management."
-  },
-  {
-    "name": "AeroDynamics Corp", "sector": "Aerospace", "city": "Seattle, WA",
-    "contact": { "name": "Mark Johnson" }, "email": "mark.johnson@aerodynamics.com", "website": "https://example.com",
-    "description": "Designing next-generation aircraft and space exploration vehicles."
-  },
-  {
-    "companyName": "FinSync Solutions", "industry": "FinTech", "location": "New York, NY",
-    "contactName": "Jessica Rodriguez", "email": "jessica.r@finsync.com", "website": "https://example.com",
-    "description": "Streamlining financial operations with blockchain and AI technology."
-  },
-  {
-    "company": "EduSphere Online", "industry": "EdTech", "location": "Palo Alto, CA",
-    "contactName": "Tom Harris", "email": "tom.harris@edusphere.com", "website": "https://example.com",
-    "description": "An online learning platform offering interactive courses for all ages."
-  },
-  {
-    "name": "ConnectSphere", "sector": "Social Media", "city": "Los Angeles, CA",
-    "contactName": "Laura Chen", "email": "laura.c@connectsphere.com", "website": "https://example.com",
-    "description": "A new social platform focused on building local community connections."
-  },
-  {
-    "company": "GourmetGo", "industry": "Food & Beverage", "location": "Chicago, IL",
-    "contactName": "Kevin Wilson", "email": "kevin.w@gourmetgo.com", "website": "https://example.com",
-    "description": "A premium meal-kit delivery service featuring recipes from world-renowned chefs."
-  },
-  {
-    "companyName": "TerraForm Real Estate", "industry": "Real Estate", "location": "Miami, FL",
-    "contactName": "Brenda Smith", "email": "brenda.s@terraform.com", "website": "https://example.com",
-    "description": "Utilizing VR technology for immersive virtual property tours and sales."
-  },
-  {
-    "name": "Visionary VR", "sector": "Virtual Reality", "city": "San Francisco, CA",
-    "contact": { "name": "Ethan Hunt" }, "email": "ethan.h@visionaryvr.com", "website": "https://example.com",
-    "description": "Developing high-fidelity VR hardware and experiences for gaming and training."
-  },
-  {
-    "company": "Momentum Motors", "industry": "Automotive", "location": "Detroit, MI",
-    "contactName": "Samantha Blue", "email": "samantha.b@momentum.com", "website": "https://example.com",
-    "description": "Manufacturing electric vehicles with a focus on performance and sustainability."
-  }
-]
+{
+  "leads": [
+    {
+      "companyName": "Innovatech",
+      "sector": "Technology",
+      "city": "San Francisco",
+      "contact": { "name": "Alex Chen" },
+      "email": "alex.chen@innovatech.com",
+      "website": "https://innovatech.com",
+      "description": "Pioneering AI-driven solutions for enterprise."
+    },
+    {
+      "company": "QuantumLeap",
+      "industry": "Finance",
+      "location": "New York",
+      "contactName": "Samantha Bee",
+      "email": "s.bee@quantumleap.com",
+      "website": "https://quantumleap.com",
+      "description": "Next-gen fintech platform for investment."
+    },
+    {
+      "name": "BioHealth",
+      "industry": "Healthcare",
+      "city": "Boston",
+      "contactName": "Dr. Evelyn Reed",
+      "email": "e.reed@biohealth.com",
+      "website": "https://biohealth.com",
+      "description": "Developing breakthrough biotechnologies."
+    },
+    {
+      "companyName": "GreenScape",
+      "sector": "Environmental",
+      "location": "Austin",
+      "contact": { "name": "Marcus Green" },
+      "website": "https://greenscape.com",
+      "description": "Sustainable solutions for urban development."
+    },
+    {
+      "company": "Eduvolve",
+      "industry": "Education",
+      "location": "Chicago",
+      "contactName": "Priya Patel",
+      "email": "priya.p@eduvolve.com",
+      "website": "https://eduvolve.com",
+      "description": "E-learning platform for K-12 education."
+    },
+    {
+      "companyName": "NexGen Logistics",
+      "sector": "Logistics",
+      "city": "Los Angeles",
+      "contact": { "name": "Frank White" },
+      "email": "f.white@nexgen.com",
+      "website": "https://nexgen.com",
+      "description": "Automated supply chain management."
+    },
+    {
+      "company": "Stellar",
+      "industry": "Aerospace",
+      "location": "Seattle",
+      "contactName": "Zoe Washington",
+      "email": "zoe.w@stellar.com",
+      "website": "https://stellar.com",
+      "description": "Commercial space travel and satellite tech."
+    },
+    {
+      "companyName": "Artisan Foods",
+      "sector": "Food & Beverage",
+      "city": "Portland",
+      "contact": { "name": "Leo Martinez" },
+      "email": "leo.m@artisan.com",
+      "website": "https://artisan.com",
+      "description": "Organic and locally-sourced gourmet products."
+    },
+    {
+      "company": "ConnectSphere",
+      "industry": "Social Media",
+      "location": "Palo Alto",
+      "contactName": "Olivia Kim",
+      "email": "olivia.k@connect.com",
+      "website": "https://connect.com",
+      "description": "A new platform for professional networking."
+    },
+    {
+      "companyName": "Momentum",
+      "sector": "Automotive",
+      "city": "Detroit",
+      "contact": { "name": "Ben Carter" },
+      "email": "ben.c@momentum.com",
+      "website": "https://momentum.com",
+      "description": "Electric vehicle and battery technology."
+    }
+  ]
+}
