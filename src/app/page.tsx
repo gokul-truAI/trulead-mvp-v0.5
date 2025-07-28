@@ -1,14 +1,18 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { Lead } from '@/lib/types';
 import { BATCH_SIZE, DAILY_LIMIT } from '@/lib/constants';
+import { locations } from '@/lib/locations';
 import Header from '@/components/dashboard/header';
 import ProgressMeter from '@/components/dashboard/progress-meter';
 import UnearthButton from '@/components/dashboard/unearth-button';
 import DiscoveryLog from '@/components/dashboard/discovery-log';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 import { Rocket } from 'lucide-react';
 
 const mapRawLeadToLead = (rawLead: any, index: number): Lead => {
@@ -32,6 +36,18 @@ export default function DashboardPage() {
   const [unearthedCount, setUnearthedCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [notification, setNotification] = useState<string | null>(null);
+
+  // Filter states
+  const [selectedRegion, setSelectedRegion] = useState<string>('');
+  const [selectedCountry, setSelectedCountry] = useState<string>('');
+  const [selectedState, setSelectedState] = useState<string>('');
+  const [selectedCity, setSelectedCity] = useState<string>('');
+  const [selectedIndustry, setSelectedIndustry] = useState<string>('');
+
+  const industries = useMemo(() => {
+    const allIndustries = allLeads.map(lead => lead.industry).filter(Boolean);
+    return [...new Set(allIndustries)].sort();
+  }, [allLeads]);
 
   useEffect(() => {
     const fetchLeads = async () => {
@@ -75,11 +91,24 @@ export default function DashboardPage() {
 
   const handleUnearth = useCallback(() => {
     if (isLoading || unearthedCount >= DAILY_LIMIT) return;
-
     setIsLoading(true);
 
     setTimeout(() => {
-      const availableIndices = allLeads
+      const filteredLeads = allLeads.filter(lead => {
+        const locationParts = lead.location.split(', ').map(p => p.trim());
+        const leadCity = locationParts[0];
+        const leadState = locationParts.length > 1 ? locationParts[1] : undefined;
+        const leadCountry = locationParts.length > 2 ? locationParts[2] : undefined;
+
+        const countryMatch = !selectedCountry || (leadCountry && leadCountry === selectedCountry);
+        const stateMatch = !selectedState || (leadState && leadState === selectedState);
+        const cityMatch = !selectedCity || (leadCity && leadCity === selectedCity);
+        const industryMatch = !selectedIndustry || lead.industry === selectedIndustry;
+
+        return countryMatch && stateMatch && cityMatch && industryMatch;
+      });
+
+      const availableIndices = filteredLeads
         .map((_, index) => index)
         .filter((index) => !unearthedIndices.has(index));
 
@@ -91,7 +120,7 @@ export default function DashboardPage() {
         const leadIndex = availableIndices.splice(randomIndex, 1)[0];
         
         if (leadIndex !== undefined) {
-          newLeads.push(allLeads[leadIndex]);
+          newLeads.push(filteredLeads[leadIndex]);
           newIndices.add(leadIndex);
         }
       }
@@ -105,17 +134,104 @@ export default function DashboardPage() {
       localStorage.setItem('truLeadAiUnearthedCount', newTotalUnearthed.toString());
 
       setIsLoading(false);
-      setNotification(`${newLeads.length} new leads unearthed!`);
-    }, 1500); // Simulate network and animation delay
-  }, [allLeads, unearthedIndices, unearthedCount, isLoading]);
+      setNotification(newLeads.length > 0 ? `${newLeads.length} new leads unearthed!` : 'No new leads found matching your criteria.');
+    }, 1500);
+  }, [allLeads, unearthedIndices, unearthedCount, isLoading, selectedCountry, selectedState, selectedCity, selectedIndustry]);
   
   const isLimitReached = unearthedCount >= DAILY_LIMIT;
+
+  const countries = selectedRegion ? locations[selectedRegion].countries : [];
+  const states = selectedCountry ? countries.find(c => c.name === selectedCountry)?.states : [];
+  const cities = selectedState ? states?.find(s => s.name === selectedState)?.cities : [];
+
+  const handleRegionChange = (value: string) => {
+    setSelectedRegion(value);
+    setSelectedCountry('');
+    setSelectedState('');
+    setSelectedCity('');
+  };
+
+  const handleCountryChange = (value: string) => {
+    setSelectedCountry(value);
+    setSelectedState('');
+    setSelectedCity('');
+  };
+
+  const handleStateChange = (value: string) => {
+    setSelectedState(value);
+    setSelectedCity('');
+  };
 
   return (
     <div className="flex flex-col h-full bg-background text-foreground">
       <Header />
       <main className="flex-grow container mx-auto px-4 py-8 flex flex-col">
         <div className="w-full max-w-4xl mx-auto flex flex-col items-center gap-6">
+          <Card className="w-full">
+            <CardContent className="p-4 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                {/* Location Filters */}
+                <div className="space-y-1">
+                  <Label htmlFor="region">Region</Label>
+                  <Select value={selectedRegion} onValueChange={handleRegionChange}>
+                    <SelectTrigger id="region"><SelectValue placeholder="Select Region" /></SelectTrigger>
+                    <SelectContent>
+                      {Object.keys(locations).map(region => (
+                        <SelectItem key={region} value={region}>{region}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="country">Country</Label>
+                  <Select value={selectedCountry} onValueChange={handleCountryChange} disabled={!selectedRegion}>
+                    <SelectTrigger id="country"><SelectValue placeholder="Select Country" /></SelectTrigger>
+                    <SelectContent>
+                      {countries.map(country => (
+                        <SelectItem key={country.name} value={country.name}>{country.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="state">State</Label>
+                  <Select value={selectedState} onValueChange={handleStateChange} disabled={!selectedCountry}>
+                    <SelectTrigger id="state"><SelectValue placeholder="Select State" /></SelectTrigger>
+                    <SelectContent>
+                      {states?.map(state => (
+                        <SelectItem key={state.name} value={state.name}>{state.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="city">City</Label>
+                  <Select value={selectedCity} onValueChange={setSelectedCity} disabled={!selectedState}>
+                    <SelectTrigger id="city"><SelectValue placeholder="Select City" /></SelectTrigger>
+                    <SelectContent>
+                      {cities?.map(city => (
+                        <SelectItem key={city} value={city}>{city}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {/* Industry Filter */}
+                <div className="space-y-1">
+                  <Label htmlFor="industry">Industry</Label>
+                  <Select value={selectedIndustry} onValueChange={setSelectedIndustry}>
+                    <SelectTrigger id="industry"><SelectValue placeholder="Select Industry" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">All Industries</SelectItem>
+                      {industries.map(industry => (
+                        <SelectItem key={industry} value={industry}>{industry}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
           <ProgressMeter unearthed={unearthedCount} limit={DAILY_LIMIT} />
           <UnearthButton
             onClick={handleUnearth}
@@ -142,3 +258,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
