@@ -61,7 +61,9 @@ export default function DashboardPage() {
           const mappedLeads = rawData.leads.map(mapRawLeadToLead);
           setAllLeads(mappedLeads);
         } else {
-          throw new Error('Lead data is not in the expected format');
+          // If leads are at the root
+          const mappedLeads = rawData.map(mapRawLeadToLead);
+          setAllLeads(mappedLeads);
         }
       } catch (error) {
         console.error('Failed to load leads:', error);
@@ -98,11 +100,12 @@ export default function DashboardPage() {
         const locationParts = lead.location.split(', ').map(p => p.trim());
         const leadCity = locationParts[0];
         const leadState = locationParts.length > 1 ? locationParts[1] : undefined;
-        const leadCountry = locationParts.length > 2 ? locationParts[2] : undefined;
+        // This logic might need adjustment based on how country is represented in your data
+        const leadCountry = locationParts.length > 2 ? locationParts[2] : undefined; 
 
         const countryMatch = !selectedCountry || (leadCountry && leadCountry === selectedCountry);
         const stateMatch = !selectedState || (leadState && leadState === selectedState);
-        const cityMatch = !selectedCity || (leadCity && leadCity === selectedCity);
+        const cityMatch = !selectedCity || (leadCity === selectedCity);
         const industryMatch = !selectedIndustry || lead.industry === selectedIndustry;
 
         return countryMatch && stateMatch && cityMatch && industryMatch;
@@ -140,9 +143,10 @@ export default function DashboardPage() {
   
   const isLimitReached = unearthedCount >= DAILY_LIMIT;
 
-  const countries = selectedRegion ? locations[selectedRegion].countries : [];
-  const states = selectedCountry ? countries.find(c => c.name === selectedCountry)?.states : [];
-  const cities = selectedState ? states?.find(s => s.name === selectedState)?.cities : [];
+  const countries = useMemo(() => selectedRegion ? locations[selectedRegion as keyof typeof locations].countries : [], [selectedRegion]);
+  const states = useMemo(() => selectedCountry ? countries.find(c => c.name === selectedCountry)?.states : [], [selectedCountry, countries]);
+  const cities = useMemo(() => selectedState ? states?.find(s => s.name === selectedState)?.cities : [], [selectedState, states]);
+
 
   const handleRegionChange = (value: string) => {
     setSelectedRegion(value);
@@ -160,6 +164,14 @@ export default function DashboardPage() {
   const handleStateChange = (value: string) => {
     setSelectedState(value);
     setSelectedCity('');
+  };
+  
+  const handleIndustryChange = (value: string) => {
+    if (value === "all") {
+      setSelectedIndustry("");
+    } else {
+      setSelectedIndustry(value);
+    }
   };
 
   return (
@@ -218,10 +230,10 @@ export default function DashboardPage() {
                 {/* Industry Filter */}
                 <div className="space-y-1">
                   <Label htmlFor="industry">Industry</Label>
-                  <Select value={selectedIndustry} onValueChange={setSelectedIndustry}>
+                  <Select value={selectedIndustry} onValueChange={handleIndustryChange}>
                     <SelectTrigger id="industry"><SelectValue placeholder="Select Industry" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Industries</SelectItem>
+                      <SelectItem value="all">All Industries</SelectItem>
                       {industries.map(industry => (
                         <SelectItem key={industry} value={industry}>{industry}</SelectItem>
                       ))}
@@ -258,5 +270,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
