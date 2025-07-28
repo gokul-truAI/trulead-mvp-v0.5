@@ -60,10 +60,11 @@ export default function DashboardPage() {
         if (rawData && Array.isArray(rawData.leads)) {
           const mappedLeads = rawData.leads.map(mapRawLeadToLead);
           setAllLeads(mappedLeads);
-        } else {
-          // If leads are at the root
+        } else if (Array.isArray(rawData)) {
           const mappedLeads = rawData.map(mapRawLeadToLead);
           setAllLeads(mappedLeads);
+        } else {
+           console.error('Lead data is not in a recognized format:', rawData);
         }
       } catch (error) {
         console.error('Failed to load leads:', error);
@@ -236,6 +237,7 @@ export default function DashboardPage() {
                       <SelectItem value="all">All Industries</SelectItem>
                       {industries.map(industry => (
                         <SelectItem key={industry} value={industry}>{industry}</SelectItem>
+
                       ))}
                     </SelectContent>
                   </Select>

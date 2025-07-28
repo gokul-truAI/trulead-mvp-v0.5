@@ -1,0 +1,94 @@
+
+{
+  "leads": [
+    {
+      "companyName": "Innovatech",
+      "sector": "Technology",
+      "city": "San Francisco",
+      "contact": { "name": "Alex Chen" },
+      "email": "alex.chen@innovatech.com",
+      "website": "https://innovatech.com",
+      "description": "Pioneering AI-driven solutions for enterprise."
+    },
+    {
+      "company": "QuantumLeap",
+      "industry": "Finance",
+      "location": "New York",
+      "contactName": "Samantha Bee",
+      "email": "s.bee@quantumleap.com",
+      "website": "https://quantumleap.com",
+      "description": "Next-gen fintech platform for investment."
+    },
+    {
+      "name": "BioHealth",
+      "industry": "Healthcare",
+      "city": "Boston",
+      "contactName": "Dr. Evelyn Reed",
+      "email": "e.reed@biohealth.com",
+      "website": "https://biohealth.com",
+      "description": "Developing breakthrough biotechnologies."
+    },
+    {
+      "companyName": "GreenScape",
+      "sector": "Environmental",
+      "location": "Austin",
+      "contact": { "name": "Marcus Green" },
+      "website": "https://greenscape.com",
+      "description": "Sustainable solutions for urban development."
+    },
+    {
+      "company": "Eduvolve",
+      "industry": "Education",
+      "location": "Chicago",
+      "contactName": "Priya Patel",
+      "email": "priya.p@eduvolve.com",
+      "website": "https://eduvolve.com",
+      "description": "E-learning platform for K-12 education."
+    },
+    {
+      "companyName": "NexGen Logistics",
+      "sector": "Logistics",
+      "city": "Los Angeles",
+      "contact": { "name": "Frank White" },
+      "email": "f.white@nexgen.com",
+      "website": "https://nexgen.com",
+      "description": "Automated supply chain management."
+    },
+    {
+      "company": "Stellar",
+      "industry": "Aerospace",
+      "location": "Seattle",
+      "contactName": "Zoe Washington",
+      "email": "zoe.w@stellar.com",
+      "website": "https://stellar.com",
+      "description": "Commercial space travel and satellite tech."
+    },
+    {
+      "companyName": "Artisan Foods",
+      "sector": "Food & Beverage",
+      "city": "Portland",
+      "contact": { "name": "Leo Martinez" },
+      "email": "leo.m@artisan.com",
+      "website": "https://artisan.com",
+      "description": "Organic and locally-sourced gourmet products."
+    },
+    {
+      "company": "ConnectSphere",
+      "industry": "Social Media",
+      "location": "Palo Alto",
+      "contactName": "Olivia Kim",
+      "email": "olivia.k@connect.com",
+      "website": "https://connect.com",
+      "description": "A new platform for professional networking."
+    },
+    {
+      "companyName": "Momentum",
+      "sector": "Automotive",
+      "city": "Detroit",
+      "contact": { "name": "Ben Carter" },
+      "email": "ben.c@momentum.com",
+      "website": "https://momentum.com",
+      "description": "Electric vehicle and battery technology."
+    }
+  ]
+}
