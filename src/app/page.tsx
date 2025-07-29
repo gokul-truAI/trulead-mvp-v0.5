@@ -248,7 +248,7 @@ export default function MyLeadsPage() {
   const isLimitReached = unearthedCount >= DAILY_LIMIT;
 
   return (
-    <div className="flex flex-col h-full bg-background text-foreground">
+    <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Header />
       <main className="flex-grow container mx-auto px-4 py-8 flex flex-col">
         <div className="w-full max-w-4xl mx-auto flex flex-col items-center gap-6">

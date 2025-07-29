@@ -72,6 +72,7 @@ export default function RequestLeadsPage() {
       setIsSubmitting(false);
       setSubmissionMessage('Your lead request has been submitted successfully!');
       reset();
+      setValue('continent', '');
       setTimeout(() => setSubmissionMessage(''), 3000);
     }, 1000);
   };
@@ -79,7 +80,7 @@ export default function RequestLeadsPage() {
   const selectedContinent = watch('continent');
 
   return (
-    <div className="flex flex-col h-full bg-background text-foreground">
+    <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Header />
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -123,7 +124,7 @@ export default function RequestLeadsPage() {
               <CardHeader>
                 <CardTitle>Track Your Requests</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -136,7 +137,7 @@ export default function RequestLeadsPage() {
                   <TableBody>
                     {requests.length > 0 ? requests.map((req) => (
                       <TableRow key={req.id}>
-                        <TableCell>{req.category}</TableCell>
+                        <TableCell className="min-w-[150px]">{req.category}</TableCell>
                         <TableCell>{req.continent}</TableCell>
                         <TableCell>{format(new Date(req.requestDate), 'PP')}</TableCell>
                         <TableCell>

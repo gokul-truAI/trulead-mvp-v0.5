@@ -68,7 +68,7 @@ export default function LeadCard({ lead, animationStyle, onUpdateLead }: LeadCar
           <AccordionItem value={lead.id} className="border-b-0">
             <AccordionTrigger className="p-4 hover:no-underline">
               <div className="flex flex-col md:flex-row md:items-center justify-between w-full text-left gap-4">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-grow">
                     <div className="bg-primary/10 p-3 rounded-lg">
                         <Building2 className="h-6 w-6 text-primary" />
                     </div>
@@ -76,7 +76,7 @@ export default function LeadCard({ lead, animationStyle, onUpdateLead }: LeadCar
                         <h3 className="font-bold text-lg text-primary">{lead.company}</h3>
                     </div>
                 </div>
-                <div className="flex flex-wrap gap-2 justify-start md:justify-end">
+                <div className="flex flex-wrap gap-2 justify-start md:justify-end md:flex-shrink-0">
                   <StatusBadge status={lead.status} />
                   <Badge variant="secondary"><Briefcase className="mr-1 h-3 w-3" />{lead.industry}</Badge>
                   <Badge variant="secondary"><MapPin className="mr-1 h-3 w-3" />{lead.location}</Badge>
@@ -93,13 +93,13 @@ export default function LeadCard({ lead, animationStyle, onUpdateLead }: LeadCar
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div className="flex items-start gap-2 col-span-1 md:col-span-2">
-                    <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <FileText className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                     <span className="font-medium whitespace-nowrap">Description:</span> 
                     <p className="flex-1 text-foreground/80">{lead.description}</p>
                 </div>
                 
-                <div className="flex items-center gap-2"><Mail className="h-4 w-4 text-muted-foreground" /><span className="font-medium">Email:</span> <span className="text-foreground/80">{lead.email}</span></div>
-                <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-muted-foreground" /><span className="font-medium">Phone:</span> <span className="text-foreground/80">{lead.phoneNumber}</span></div>
+                <div className="flex items-center gap-2"><Mail className="h-4 w-4 text-muted-foreground" /><span className="font-medium">Email:</span> <span className="text-foreground/80 truncate">{lead.email}</span></div>
+                <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-muted-foreground" /><span className="font-medium">Phone:</span> <span className="text-foreground/80 truncate">{lead.phoneNumber}</span></div>
                 <div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-muted-foreground" /><span className="font-medium">Founded:</span> <span className="text-foreground/80">{lead.foundedOn}</span></div>
                 <div className="flex items-center gap-2"><Pin className="h-4 w-4 text-muted-foreground" /><span className="font-medium">Postal Code:</span> <span className="text-foreground/80">{lead.postalCode}</span></div>
 

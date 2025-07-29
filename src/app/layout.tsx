@@ -8,6 +8,7 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 export const metadata: Metadata = {
   title: 'TruLeadAI',
   description: 'Unearth your next business opportunity with AI-powered lead discovery.',
+  viewport: 'width=device-width, initial-scale=1',
 };
 
 export default function RootLayout({
@@ -18,7 +19,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} h-full`}>
       <body className="font-sans antialiased h-full bg-background">
-        {children}
+        <div className="relative flex min-h-screen flex-col">
+          {children}
+        </div>
         <Toaster />
       </body>
     </html>
