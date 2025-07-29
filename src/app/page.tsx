@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -77,7 +76,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchLeads = async () => {
       try {
-        const response = await fetch('/data/leadseurope.json');
+        const response = await fetch('/data/leads.json');
         if (!response.ok) {
           throw new Error('Failed to fetch leads');
         }
