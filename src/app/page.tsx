@@ -272,8 +272,9 @@ export default function MyLeadsPage() {
         return displayedLeads;
     }
     return displayedLeads.filter(lead => lead.industry.toLowerCase().includes(filters.category!.toLowerCase()));
-  }
-  
+  };
+
+  const filteredLeads = getFilteredLeads();
   const isLimitReached = unearthedCount >= DAILY_LIMIT;
 
   return (
@@ -326,7 +327,12 @@ export default function MyLeadsPage() {
             </Card>
 
             <div className="w-full max-w-4xl mx-auto flex flex-col items-center gap-6">
-                <ProgressMeter unearthed={unearthedCount} limit={DAILY_LIMIT} />
+                <ProgressMeter 
+                    unearthed={unearthedCount} 
+                    limit={DAILY_LIMIT} 
+                    category={filters.category}
+                    categoryCount={filteredLeads.length}
+                />
                 
                 <LeadFilters 
                     filters={filters}
@@ -353,11 +359,9 @@ export default function MyLeadsPage() {
                 )}
             </div>
 
-            <DiscoveryLog leads={getFilteredLeads()} onUpdateLead={updateLead} />
+            <DiscoveryLog leads={filteredLeads} onUpdateLead={updateLead} />
         </div>
       </main>
     </div>
   );
 }
-
-    
