@@ -1,4 +1,3 @@
-
 [
   {
     "uuid": "47f23494-ac0a-4738-ad35-622a46dca152",
@@ -20,175 +19,91 @@
     }
   },
   {
-    "uuid": "8a7d6e5c-0f8b-4f3a-9c2d-1e4b5a6c7d8e",
+    "uuid": "a2b3c4d5-e6f7-g8h9-i0j1-k2l3m4n5o6p7",
     "properties": {
-      "identifier": {
-        "value": "Euro-Machines"
-      },
-      "short_description": "A leading supplier of vineyard and winery equipment in North America, based in Germany.",
+      "identifier": { "value": "Euro-Plast" },
+      "short_description": "A leading European manufacturer of plastic components for the automotive and electronics industries.",
       "categories": [
-        { "value": "Agriculture" },
-        { "value": "Winery Equipment" }
+        { "value": "Manufacturing" },
+        { "value": "Plastics" },
+        { "value": "Automotive" }
       ],
       "location_identifiers": [
-        { "location_type": "city", "value": "Mainz" },
+        { "location_type": "city", "value": "Stuttgart" },
         { "location_type": "country", "value": "Germany" }
       ],
-      "contact_email": "info@euro-machines.de",
-      "website": { "value": "https://www.euro-machines.de" }
+      "contact_email": "contact@euro-plast.de",
+      "website": { "value": "https://euro-plast.de" }
     }
   },
   {
-    "uuid": "b3c9a8f1-5e6d-4c7b-8a9f-0e1d2c3b4a5a",
+    "uuid": "b3c4d5e6-f7g8-h9i0-j1k2-l3m4n5o6p7q8",
     "properties": {
-      "identifier": {
-        "value": "Schneider Electric"
-      },
-      "short_description": "Global specialist in energy management and automation, providing integrated solutions for efficiency and sustainability.",
+      "identifier": { "value": "French Tech Innovations" },
+      "short_description": "A startup incubator and accelerator based in Paris, focusing on SaaS and AI.",
       "categories": [
-        { "value": "Electrical Distribution" },
-        { "value": "Automation" }
+        { "value": "Technology" },
+        { "value": "Venture Capital" },
+        { "value": "SaaS" }
       ],
       "location_identifiers": [
-        { "location_type": "city", "value": "Rueil-Malmaison" },
+        { "location_type": "city", "value": "Paris" },
         { "location_type": "country", "value": "France" }
       ],
-      "contact_email": "global-marketing@se.com",
-      "website": { "value": "https://www.se.com" }
+      "contact_email": "info@frenchtech.fr",
+      "website": { "value": "https://frenchtech.fr" }
     }
   },
   {
-    "uuid": "f2d1e0c9-8b7a-6f5e-4d3c-2b1a0f9e8d7c",
+    "uuid": "c4d5e6f7-g8h9-i0j1-k2l3-m4n5o6p7q8r9",
     "properties": {
-      "identifier": {
-        "value": "SAP SE"
-      },
-      "short_description": "A German multinational software corporation that develops enterprise software to manage business operations and customer relations.",
+      "identifier": { "value": "UK Pharma Solutions" },
+      "short_description": "Provides consulting and clinical trial support for pharmaceutical companies in the UK.",
       "categories": [
-        { "value": "Enterprise Software" },
-        { "value": "Technology" }
-      ],
-      "location_identifiers": [
-        { "location_type": "city", "value": "Walldorf" },
-        { "location_type": "country", "value": "Germany" }
-      ],
-      "contact_email": "info.germany@sap.com",
-      "website": { "value": "https://www.sap.com" }
-    }
-  },
-  {
-    "uuid": "1b0a9f8e-7d6c-5b4a-3c2d-1e0f9b8c7d6a",
-    "properties": {
-      "identifier": {
-        "value": "Rolls-Royce Holdings"
-      },
-      "short_description": "A pre-eminent engineering company focused on world-class power and propulsion systems.",
-      "categories": [
-        { "value": "Aerospace" },
-        { "value": "Engineering" }
+        { "value": "Pharmaceutical" },
+        { "value": "Consulting" }
       ],
       "location_identifiers": [
         { "location_type": "city", "value": "London" },
         { "location_type": "country", "value": "United Kingdom" }
       ],
-      "contact_email": "corporate.communications@rolls-royce.com",
-      "website": { "value": "https://www.rolls-royce.com" }
+      "contact_email": "enquiries@ukpharma.co.uk",
+      "website": { "value": "https://ukpharma.co.uk" }
     }
   },
   {
-    "uuid": "c3b2a1f0-9e8d-7c6b-5a4f-3e2d1c0b9a8f",
+    "uuid": "d5e6f7g8-h9i0-j1k2-l3m4-n5o6p7q8r9s0",
     "properties": {
-      "identifier": {
-        "value": "L'Oréal"
-      },
-      "short_description": "The world's largest cosmetics company, manufacturing and selling a wide range of beauty products.",
+      "identifier": { "value": "Milano Design Co." },
+      "short_description": "A luxury fashion house specializing in high-end leather goods and accessories.",
       "categories": [
-        { "value": "Cosmetics" },
-        { "value": "Beauty" },
-        { "value": "Consumer Goods" }
+        { "value": "Fashion" },
+        { "value": "Luxury Goods" },
+        { "value": "Retail" }
       ],
       "location_identifiers": [
-        { "location_type": "city", "value": "Clichy" },
-        { "location_type": "country", "value": "France" }
+        { "location_type": "city", "value": "Milan" },
+        { "location_type": "country", "value": "Italy" }
       ],
-      "contact_email": "media.relations@loreal.com",
-      "website": { "value": "https://www.loreal.com" }
+      "contact_email": "press@milanodesign.it",
+      "website": { "value": "https://milanodesign.it" }
     }
   },
   {
-    "uuid": "a9f8e7d6-c5b4-a3c2-b1a0-f9e8d7c6b5a4",
+    "uuid": "e6f7g8h9-i0j1-k2l3-m4n5-o6p7q8r9s0t1",
     "properties": {
-      "identifier": {
-        "value": "Siemens AG"
-      },
-      "short_description": "A German multinational conglomerate and the largest industrial manufacturing company in Europe.",
+      "identifier": { "value": "Nordic Renewables" },
+      "short_description": "Developer of wind and solar energy projects across Scandinavia.",
       "categories": [
-        { "value": "Industrial Manufacturing" },
-        { "value": "Technology" }
+        { "value": "Renewable Energy" },
+        { "value": "Utilities" }
       ],
       "location_identifiers": [
-        { "location_type": "city", "value": "Munich" },
-        { "location_type": "country", "value": "Germany" }
+        { "location_type": "city", "value": "Stockholm" },
+        { "location_type": "country", "value": "Sweden" }
       ],
-      "contact_email": "contact@siemens.com",
-      "website": { "value": "https://www.siemens.com" }
-    }
-  },
-  {
-    "uuid": "e1d0c9b8-a7f6-e5d4-c3b2-a1f0e9d8c7b6",
-    "properties": {
-      "identifier": {
-        "value": "Unilever"
-      },
-      "short_description": "A British multinational consumer goods company with products including food, condiments, ice cream, vitamins, and beauty products.",
-      "categories": [
-        { "value": "Consumer Goods" },
-        { "value": "Food & Beverage" }
-      ],
-      "location_identifiers": [
-        { "location_type": "city", "value": "London" },
-        { "location_type": "country", "value": "United Kingdom" }
-      ],
-      "contact_email": "mediarelations.plc@unilever.com",
-      "website": { "value": "https://www.unilever.com" }
-    }
-  },
-  {
-    "uuid": "0f9e8d7c-6b5a-4f3e-2d1c-0b9a8f7e6d5c",
-    "properties": {
-      "identifier": {
-        "value": "TotalEnergies"
-      },
-      "short_description": "A French multinational integrated energy and petroleum company.",
-      "categories": [
-        { "value": "Energy" },
-        { "value": "Oil and Gas" }
-      ],
-      "location_identifiers": [
-        { "location_type": "city", "value": "Courbevoie" },
-        { "location_type": "country", "value": "France" }
-      ],
-      "contact_email": "corporate-communications@totalenergies.com",
-      "website": { "value": "https://totalenergies.com" }
-    }
-  },
-  {
-    "uuid": "d7c6b5a4-f3e2-d1c0-b9a8-f7e6d5c4b3a2",
-    "properties": {
-      "identifier": {
-        "value": "Volkswagen Group"
-      },
-      "short_description": "A German multinational automotive manufacturing corporation.",
-      "categories": [
-        { "value": "Automotive" },
-        { "value": "Manufacturing" }
-      ],
-      "location_identifiers": [
-        { "location_type": "city", "value": "Wolfsburg" },
-        { "location_type": "country", "value": "Germany" }
-      ],
-      "contact_email": "info@volkswagen.de",
-      "website": { "value": "https://www.volkswagenag.com" }
+      "contact_email": "projects@nordicrenew.se",
+      "website": { "value": "https://nordicrenew.se" }
     }
   }
 ]
