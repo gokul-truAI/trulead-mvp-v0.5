@@ -23,9 +23,7 @@ export default function AiInsight({ lead }: AiInsightProps) {
         const result = await generateLeadInsight({
           company: lead.company,
           industry: lead.industry,
-          location: lead.location,
-          contactName: lead.contactName,
-          email: lead.email,
+          description: lead.description,
         });
         setInsight(result.insight);
       } catch (e) {

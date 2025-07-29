@@ -1,53 +1,43 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import type { Lead } from '@/lib/types';
+import { useState, useEffect, useCallback } from 'react';
+import type { Lead, RawLead } from '@/lib/types';
 import { BATCH_SIZE, DAILY_LIMIT } from '@/lib/constants';
-import { locations } from '@/lib/locations';
 import Header from '@/components/dashboard/header';
 import ProgressMeter from '@/components/dashboard/progress-meter';
 import UnearthButton from '@/components/dashboard/unearth-button';
 import DiscoveryLog from '@/components/dashboard/discovery-log';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
 import { Rocket } from 'lucide-react';
 
-const mapRawLeadToLead = (rawLead: any, index: number): Lead => {
-  const email = rawLead.email || `placeholder-${index}@example.com`;
+const mapRawLeadToLead = (rawLead: RawLead): Lead => {
+  const properties = rawLead.properties;
+  const company = properties.identifier?.value || 'N/A';
+  const industries = properties.categories?.map(c => c.value).join(', ') || 'N/A';
+  const city = properties.location_identifiers?.find(l => l.location_type === 'city')?.value;
+  const country = properties.location_identifiers?.find(l => l.location_type === 'country')?.value;
+  const location = city && country ? `${city}, ${country}` : city || country || 'N/A';
+
   return {
-    id: email,
-    company: rawLead.company || rawLead.name || rawLead.companyName || 'N/A',
-    industry: rawLead.industry || rawLead.sector || 'N/A',
-    location: rawLead.location || rawLead.city || 'N/A',
-    contactName: rawLead.contactName || rawLead.contact?.name || 'N/A',
-    email: email,
-    website: rawLead.website || '#',
-    description: rawLead.description || 'No description available.',
+    id: rawLead.uuid,
+    company: company,
+    industry: industries,
+    location: location,
+    contactName: 'N/A', // Not available in the provided structure
+    email: properties.contact_email || 'N/A',
+    website: properties.website?.value || '#',
+    description: properties.short_description || 'No description available.',
   };
 };
 
 export default function DashboardPage() {
   const [allLeads, setAllLeads] = useState<Lead[]>([]);
   const [displayedLeads, setDisplayedLeads] = useState<Lead[]>([]);
-  const [unearthedIndices, setUnearthedIndices] = useState<Set<number>>(new Set());
+  const [unearthedIds, setUnearthedIds] = useState<Set<string>>(new Set());
   const [unearthedCount, setUnearthedCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [notification, setNotification] = useState<string | null>(null);
-
-  // Filter states
-  const [selectedRegion, setSelectedRegion] = useState<string>('');
-  const [selectedCountry, setSelectedCountry] = useState<string>('');
-  const [selectedState, setSelectedState] = useState<string>('');
-  const [selectedCity, setSelectedCity] = useState<string>('');
-  const [selectedIndustry, setSelectedIndustry] = useState<string>('');
-
-  const industries = useMemo(() => {
-    const allIndustries = allLeads.map(lead => lead.industry).filter(Boolean);
-    return [...new Set(allIndustries)].sort();
-  }, [allLeads]);
 
   useEffect(() => {
     const fetchLeads = async () => {
@@ -56,15 +46,12 @@ export default function DashboardPage() {
         if (!response.ok) {
           throw new Error('Failed to fetch leads');
         }
-        const rawData = await response.json();
-        if (rawData && Array.isArray(rawData.leads)) {
-          const mappedLeads = rawData.leads.map(mapRawLeadToLead);
-          setAllLeads(mappedLeads);
-        } else if (Array.isArray(rawData)) {
+        const rawData: RawLead[] = await response.json();
+        if (Array.isArray(rawData)) {
           const mappedLeads = rawData.map(mapRawLeadToLead);
           setAllLeads(mappedLeads);
         } else {
-           console.error('Lead data is not in a recognized format:', rawData);
+           console.error('Lead data is not in a recognized array format:', rawData);
         }
       } catch (error) {
         console.error('Failed to load leads:', error);
@@ -76,14 +63,27 @@ export default function DashboardPage() {
     const today = new Date().toISOString().split('T')[0];
     const savedDate = localStorage.getItem('truLeadAiLastUnearthDate');
     const savedCount = localStorage.getItem('truLeadAiUnearthedCount');
+    const savedIds = localStorage.getItem('truLeadAiUnearthedIds');
 
-    if (savedDate === today && savedCount) {
-      setUnearthedCount(parseInt(savedCount, 10));
+    if (savedDate === today) {
+      setUnearthedCount(savedCount ? parseInt(savedCount, 10) : 0);
+      setUnearthedIds(savedIds ? new Set(JSON.parse(savedIds)) : new Set());
     } else {
       localStorage.setItem('truLeadAiUnearthedCount', '0');
       localStorage.setItem('truLeadAiLastUnearthDate', today);
+      localStorage.setItem('truLeadAiUnearthedIds', '[]');
+      setUnearthedCount(0);
+      setUnearthedIds(new Set());
     }
   }, []);
+
+  useEffect(() => {
+    if (allLeads.length > 0 && unearthedIds.size > 0) {
+        const previouslyUnearthed = allLeads.filter(lead => unearthedIds.has(lead.id));
+        setDisplayedLeads(previouslyUnearthed);
+    }
+  }, [allLeads, unearthedIds]);
+
 
   useEffect(() => {
     if (notification) {
@@ -93,159 +93,46 @@ export default function DashboardPage() {
   }, [notification]);
 
   const handleUnearth = useCallback(() => {
-    if (isLoading || unearthedCount >= DAILY_LIMIT) return;
+    if (isLoading || unearthedCount >= DAILY_LIMIT || allLeads.length === 0) return;
     setIsLoading(true);
 
     setTimeout(() => {
-      const filteredLeads = allLeads.filter(lead => {
-        const locationParts = lead.location.split(', ').map(p => p.trim());
-        const leadCity = locationParts[0];
-        const leadState = locationParts.length > 1 ? locationParts[1] : undefined;
-        // This logic might need adjustment based on how country is represented in your data
-        const leadCountry = locationParts.length > 2 ? locationParts[2] : undefined; 
+      const availableLeads = allLeads.filter(lead => !unearthedIds.has(lead.id));
 
-        const countryMatch = !selectedCountry || (leadCountry && leadCountry === selectedCountry);
-        const stateMatch = !selectedState || (leadState && leadState === selectedState);
-        const cityMatch = !selectedCity || (leadCity === selectedCity);
-        const industryMatch = !selectedIndustry || lead.industry === selectedIndustry;
+      const newLeadsBatch = [];
+      const newIds = new Set(unearthedIds);
 
-        return countryMatch && stateMatch && cityMatch && industryMatch;
-      });
-
-      const availableIndices = filteredLeads
-        .map((_, index) => index)
-        .filter((index) => !unearthedIndices.has(index));
-
-      const newLeads: Lead[] = [];
-      const newIndices = new Set(unearthedIndices);
-
-      for (let i = 0; i < BATCH_SIZE && availableIndices.length > 0; i++) {
-        const randomIndex = Math.floor(Math.random() * availableIndices.length);
-        const leadIndex = availableIndices.splice(randomIndex, 1)[0];
+      for (let i = 0; i < BATCH_SIZE && availableLeads.length > 0; i++) {
+        const randomIndex = Math.floor(Math.random() * availableLeads.length);
+        const newLead = availableLeads.splice(randomIndex, 1)[0];
         
-        if (leadIndex !== undefined) {
-          newLeads.push(filteredLeads[leadIndex]);
-          newIndices.add(leadIndex);
+        if (newLead) {
+          newLeadsBatch.push(newLead);
+          newIds.add(newLead.id);
         }
       }
 
-      const newTotalUnearthed = unearthedCount + newLeads.length;
+      const newTotalUnearthed = unearthedCount + newLeadsBatch.length;
       
-      setDisplayedLeads((prev) => [...newLeads, ...prev]);
-      setUnearthedIndices(newIndices);
+      setDisplayedLeads((prev) => [...newLeadsBatch, ...prev]);
+      setUnearthedIds(newIds);
       setUnearthedCount(newTotalUnearthed);
       
       localStorage.setItem('truLeadAiUnearthedCount', newTotalUnearthed.toString());
+      localStorage.setItem('truLeadAiUnearthedIds', JSON.stringify(Array.from(newIds)));
 
       setIsLoading(false);
-      setNotification(newLeads.length > 0 ? `${newLeads.length} new leads unearthed!` : 'No new leads found matching your criteria.');
+      setNotification(newLeadsBatch.length > 0 ? `${newLeadsBatch.length} new leads unearthed!` : 'No new leads found.');
     }, 1500);
-  }, [allLeads, unearthedIndices, unearthedCount, isLoading, selectedCountry, selectedState, selectedCity, selectedIndustry]);
+  }, [allLeads, unearthedIds, unearthedCount, isLoading]);
   
   const isLimitReached = unearthedCount >= DAILY_LIMIT;
-
-  const countries = useMemo(() => selectedRegion ? locations[selectedRegion as keyof typeof locations].countries : [], [selectedRegion]);
-  const states = useMemo(() => selectedCountry ? countries.find(c => c.name === selectedCountry)?.states : [], [selectedCountry, countries]);
-  const cities = useMemo(() => selectedState ? states?.find(s => s.name === selectedState)?.cities : [], [selectedState, states]);
-
-
-  const handleRegionChange = (value: string) => {
-    setSelectedRegion(value);
-    setSelectedCountry('');
-    setSelectedState('');
-    setSelectedCity('');
-  };
-
-  const handleCountryChange = (value: string) => {
-    setSelectedCountry(value);
-    setSelectedState('');
-    setSelectedCity('');
-  };
-
-  const handleStateChange = (value: string) => {
-    setSelectedState(value);
-    setSelectedCity('');
-  };
-  
-  const handleIndustryChange = (value: string) => {
-    if (value === "all") {
-      setSelectedIndustry("");
-    } else {
-      setSelectedIndustry(value);
-    }
-  };
 
   return (
     <div className="flex flex-col h-full bg-background text-foreground">
       <Header />
       <main className="flex-grow container mx-auto px-4 py-8 flex flex-col">
         <div className="w-full max-w-4xl mx-auto flex flex-col items-center gap-6">
-          <Card className="w-full">
-            <CardContent className="p-4 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                {/* Location Filters */}
-                <div className="space-y-1">
-                  <Label htmlFor="region">Region</Label>
-                  <Select value={selectedRegion} onValueChange={handleRegionChange}>
-                    <SelectTrigger id="region"><SelectValue placeholder="Select Region" /></SelectTrigger>
-                    <SelectContent>
-                      {Object.keys(locations).map(region => (
-                        <SelectItem key={region} value={region}>{region}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="country">Country</Label>
-                  <Select value={selectedCountry} onValueChange={handleCountryChange} disabled={!selectedRegion}>
-                    <SelectTrigger id="country"><SelectValue placeholder="Select Country" /></SelectTrigger>
-                    <SelectContent>
-                      {countries.map(country => (
-                        <SelectItem key={country.name} value={country.name}>{country.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="state">State</Label>
-                  <Select value={selectedState} onValueChange={handleStateChange} disabled={!selectedCountry}>
-                    <SelectTrigger id="state"><SelectValue placeholder="Select State" /></SelectTrigger>
-                    <SelectContent>
-                      {states?.map(state => (
-                        <SelectItem key={state.name} value={state.name}>{state.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="city">City</Label>
-                  <Select value={selectedCity} onValueChange={setSelectedCity} disabled={!selectedState}>
-                    <SelectTrigger id="city"><SelectValue placeholder="Select City" /></SelectTrigger>
-                    <SelectContent>
-                      {cities?.map(city => (
-                        <SelectItem key={city} value={city}>{city}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                {/* Industry Filter */}
-                <div className="space-y-1">
-                  <Label htmlFor="industry">Industry</Label>
-                  <Select value={selectedIndustry} onValueChange={handleIndustryChange}>
-                    <SelectTrigger id="industry"><SelectValue placeholder="Select Industry" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Industries</SelectItem>
-                      {industries.map(industry => (
-                        <SelectItem key={industry} value={industry}>{industry}</SelectItem>
-
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
           <ProgressMeter unearthed={unearthedCount} limit={DAILY_LIMIT} />
           <UnearthButton
             onClick={handleUnearth}
@@ -254,7 +141,7 @@ export default function DashboardPage() {
           />
 
           {notification && (
-            <div className="w-full transition-all duration-300 ease-in-out">
+            <div className="w-full transition-all duration-300 ease-in-out animate-fade-in">
               <Alert className="bg-primary/10 border-primary/20">
                 <Rocket className="h-4 w-4 text-primary" />
                 <AlertTitle className="text-primary font-semibold">Discovery Successful!</AlertTitle>

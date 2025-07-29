@@ -40,7 +40,7 @@ export default function UnearthButton({ onClick, isLoading, isLimitReached }: Un
       onClick={onClick}
       disabled={isDisabled}
       size="lg"
-      className="w-full max-w-sm text-lg py-7 shadow-lg"
+      className="w-full max-w-sm text-lg py-7 shadow-lg hover:shadow-primary/20 transition-shadow duration-300"
     >
       {getButtonContent()}
     </Button>

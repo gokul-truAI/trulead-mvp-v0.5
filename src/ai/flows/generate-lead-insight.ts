@@ -14,14 +14,12 @@ import {z} from 'genkit';
 const GenerateLeadInsightInputSchema = z.object({
   company: z.string().optional().describe('The name of the company.'),
   industry: z.string().optional().describe('The industry of the company.'),
-  location: z.string().optional().describe('The location of the company.'),
-  contactName: z.string().optional().describe('The name of the contact person.'),
-  email: z.string().optional().describe('The email address of the contact person.'),
+  description: z.string().optional().describe('A short description of the company.')
 });
 export type GenerateLeadInsightInput = z.infer<typeof GenerateLeadInsightInputSchema>;
 
 const GenerateLeadInsightOutputSchema = z.object({
-  insight: z.string().describe('An AI-generated insight about the lead.'),
+  insight: z.string().describe('A short, actionable sales insight based on the company profile. Highlight a potential need or conversation starter.'),
 });
 export type GenerateLeadInsightOutput = z.infer<typeof GenerateLeadInsightOutputSchema>;
 
@@ -33,16 +31,14 @@ const prompt = ai.definePrompt({
   name: 'generateLeadInsightPrompt',
   input: {schema: GenerateLeadInsightInputSchema},
   output: {schema: GenerateLeadInsightOutputSchema},
-  prompt: `You are an AI assistant that generates insights about potential leads for TruLeadAI users.
+  prompt: `You are an expert B2B sales development assistant. Your goal is to provide a concise, compelling insight for a sales representative based on the provided lead information. The insight should be a potential angle for a conversation.
 
-  If any of the lead information is missing, identify a replacement lead from the stack that is most relevant. 
-  Provide a concise and compelling insight to encourage the user to click through for more details.
+  Lead Information:
+  - Company: {{company}}
+  - Industry: {{industry}}
+  - Description: {{description}}
 
-  Company: {{company}}
-  Industry: {{industry}}
-  Location: {{location}}
-  Contact Name: {{contactName}}
-  Email: {{email}}`,
+  Generate one actionable insight. For example, if they manufacture equipment, suggest how they could benefit from a new material or software. If they are in a competitive market, suggest a potential differentiator. Keep it brief and punchy.`,
 });
 
 const generateLeadInsightFlow = ai.defineFlow(

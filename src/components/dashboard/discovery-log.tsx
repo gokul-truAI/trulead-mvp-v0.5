@@ -13,7 +13,10 @@ export default function DiscoveryLog({ leads }: DiscoveryLogProps) {
         <Telescope className="mx-auto h-12 w-12 text-muted-foreground" />
         <h3 className="mt-4 text-lg font-semibold text-foreground">Awaiting Discovery</h3>
         <p className="mt-1 text-sm text-muted-foreground">
-          Click "Unearth Leads" to begin your daily discovery.
+          Your unearthed leads will appear here.
+        </p>
+         <p className="mt-1 text-sm text-muted-foreground">
+          Click "Unearth Leads" to begin!
         </p>
       </div>
     );
