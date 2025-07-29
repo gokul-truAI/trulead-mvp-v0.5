@@ -10,6 +10,8 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import type { LocationHierarchy } from '@/lib/types';
+import { Button } from '../ui/button';
+import { X } from 'lucide-react';
 
 interface LeadFiltersProps {
   filters: {
@@ -23,6 +25,49 @@ interface LeadFiltersProps {
   locationHierarchy: LocationHierarchy;
   categories: string[];
 }
+
+const FilterSelect = ({
+  placeholder,
+  value,
+  onValueChange,
+  options,
+  disabled = false,
+}: {
+  placeholder: string;
+  value: string;
+  onValueChange: (value: string) => void;
+  options: string[];
+  disabled?: boolean;
+}) => (
+  <div className="relative">
+    <Select value={value} onValueChange={onValueChange} disabled={disabled}>
+      <SelectTrigger>
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>
+        {options.map((option) => (
+          <SelectItem key={option} value={option}>
+            {option}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+    {value && (
+      <Button
+        variant="ghost"
+        size="sm"
+        className="absolute right-8 top-1/2 -translate-y-1/2 h-6 w-6 p-0 rounded-full"
+        onClick={(e) => {
+            e.stopPropagation();
+            onValueChange('');
+        }}
+      >
+        <X className="h-4 w-4" />
+      </Button>
+    )}
+  </div>
+);
+
 
 export default function LeadFilters({
   filters,
@@ -43,76 +88,43 @@ export default function LeadFilters({
           <div className="space-y-2 col-span-1 md:col-span-3">
              <h4 className="text-sm font-medium text-muted-foreground">Filter Your Discovery</h4>
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                <Select value={filters.category} onValueChange={(value) => onFilterChange('category', value)}>
-                    <SelectTrigger>
-                        <SelectValue placeholder="Select Category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="">All Categories</SelectItem>
-                        {categories.map((cat) => (
-                        <SelectItem key={cat} value={cat}>
-                            {cat}
-                        </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+                <FilterSelect
+                  placeholder="Select Category"
+                  value={filters.category}
+                  onValueChange={(value) => onFilterChange('category', value)}
+                  options={categories}
+                />
+                
+                <FilterSelect
+                  placeholder="Select Continent"
+                  value={filters.continent}
+                  onValueChange={(value) => onFilterChange('continent', value)}
+                  options={continents}
+                />
 
-                <Select value={filters.continent} onValueChange={(value) => onFilterChange('continent', value)}>
-                    <SelectTrigger>
-                        <SelectValue placeholder="Select Continent" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="">All Continents</SelectItem>
-                        {continents.map((continent) => (
-                        <SelectItem key={continent} value={continent}>
-                            {continent}
-                        </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+                <FilterSelect
+                  placeholder="Select Country"
+                  value={filters.country}
+                  onValueChange={(value) => onFilterChange('country', value)}
+                  options={countries}
+                  disabled={!filters.continent}
+                />
 
-                <Select value={filters.country} onValueChange={(value) => onFilterChange('country', value)} disabled={!filters.continent}>
-                    <SelectTrigger>
-                        <SelectValue placeholder="Select Country" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="">All Countries</SelectItem>
-                        {countries.map((country) => (
-                        <SelectItem key={country} value={country}>
-                            {country}
-                        </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-
-                <Select value={filters.region} onValueChange={(value) => onFilterChange('region', value)} disabled={!filters.country}>
-                    <SelectTrigger>
-                        <SelectValue placeholder="Select Region" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="">All Regions</SelectItem>
-                        {regions.map((region) => (
-                        <SelectItem key={region} value={region}>
-                            {region}
-                        </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-
-                <Select value={filters.city} onValueChange={(value) => onFilterChange('city', value)} disabled={!filters.region}>
-                    <SelectTrigger>
-                        <SelectValue placeholder="Select City" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="">All Cities</SelectItem>
-                        {cities.map((city) => (
-                        <SelectItem key={city} value={city}>
-                            {city}
-                        </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-
+                <FilterSelect
+                  placeholder="Select Region"
+                  value={filters.region}
+                  onValueChange={(value) => onFilterChange('region', value)}
+                  options={regions}
+                  disabled={!filters.country}
+                />
+                
+                <FilterSelect
+                  placeholder="Select City"
+                  value={filters.city}
+                  onValueChange={(value) => onFilterChange('city', value)}
+                  options={cities}
+                  disabled={!filters.region}
+                />
              </div>
           </div>
         </div>
