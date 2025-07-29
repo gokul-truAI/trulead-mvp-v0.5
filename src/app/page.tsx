@@ -115,7 +115,11 @@ export default function DashboardPage() {
               }
             }
             
-            lead.properties.categories?.forEach(cat => newCategories.add(cat.value));
+            lead.properties.categories?.forEach(cat => {
+              if (cat.value) {
+                newCategories.add(cat.value);
+              }
+            });
           });
 
           setLocationHierarchy(newLocationHierarchy);

@@ -49,7 +49,7 @@ export default function LeadFilters({
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="">All Categories</SelectItem>
-                        {categories.filter(cat => cat).map((cat) => (
+                        {categories.map((cat) => (
                         <SelectItem key={cat} value={cat}>
                             {cat}
                         </SelectItem>
