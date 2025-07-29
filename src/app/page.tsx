@@ -2,12 +2,13 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import type { Lead, RawLead } from '@/lib/types';
+import type { Lead, RawLead, LocationHierarchy } from '@/lib/types';
 import { BATCH_SIZE, DAILY_LIMIT } from '@/lib/constants';
 import Header from '@/components/dashboard/header';
 import ProgressMeter from '@/components/dashboard/progress-meter';
 import UnearthButton from '@/components/dashboard/unearth-button';
 import DiscoveryLog from '@/components/dashboard/discovery-log';
+import LeadFilters from '@/components/dashboard/lead-filters';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Rocket } from 'lucide-react';
 import { format } from 'date-fns';
@@ -50,7 +51,7 @@ const mapRawLeadToLead = (rawLead: RawLead): Lead => {
     facebook: properties.facebook?.value || null,
     postalCode: properties.hq_postal_code || 'N/A',
     foundedOn: foundedOn,
-    contactName: 'N/A' // This field doesn't exist in the source data
+    contactName: 'N/A'
   };
 };
 
@@ -61,6 +62,17 @@ export default function DashboardPage() {
   const [unearthedCount, setUnearthedCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [notification, setNotification] = useState<string | null>(null);
+
+  // Filter state
+  const [locationHierarchy, setLocationHierarchy] = useState<LocationHierarchy>({});
+  const [categories, setCategories] = useState<string[]>([]);
+  const [filters, setFilters] = useState({
+    continent: '',
+    country: '',
+    region: '',
+    city: '',
+    category: '',
+  });
 
   useEffect(() => {
     const fetchLeads = async () => {
@@ -74,6 +86,41 @@ export default function DashboardPage() {
         if (rawData && Array.isArray(rawData.entities)) {
           const mappedLeads = rawData.entities.map(mapRawLeadToLead);
           setAllLeads(mappedLeads);
+
+          // Extract filters
+          const newLocationHierarchy: LocationHierarchy = {};
+          const newCategories = new Set<string>();
+
+          rawData.entities.forEach(lead => {
+            let currentLevel: any = newLocationHierarchy;
+            
+            const continent = lead.properties.location_identifiers?.find(l => l.location_type === 'continent')?.value;
+            const country = lead.properties.location_identifiers?.find(l => l.location_type === 'country')?.value;
+            const region = lead.properties.location_identifiers?.find(l => l.location_type === 'region')?.value;
+            const city = lead.properties.location_identifiers?.find(l => l.location_type === 'city')?.value;
+
+            if (continent) {
+              if (!currentLevel[continent]) currentLevel[continent] = {};
+              currentLevel = currentLevel[continent];
+              if (country) {
+                if (!currentLevel[country]) currentLevel[country] = {};
+                currentLevel = currentLevel[country];
+                 if (region) {
+                  if (!currentLevel[region]) currentLevel[region] = {};
+                  currentLevel = currentLevel[region];
+                  if (city) {
+                    if (!currentLevel[city]) currentLevel[city] = {};
+                  }
+                }
+              }
+            }
+            
+            lead.properties.categories?.forEach(cat => newCategories.add(cat.value));
+          });
+
+          setLocationHierarchy(newLocationHierarchy);
+          setCategories(Array.from(newCategories).sort());
+
         } else {
            console.error('Lead data is not in a recognized array format:', rawData);
         }
@@ -90,8 +137,18 @@ export default function DashboardPage() {
     const savedIds = localStorage.getItem('truLeadAiUnearthedIds');
 
     if (savedDate === today) {
-      setUnearthedCount(savedCount ? parseInt(savedCount, 10) : 0);
-      setUnearthedIds(savedIds ? new Set(JSON.parse(savedIds)) : new Set());
+      const savedUnearthedCount = savedCount ? parseInt(savedCount, 10) : 0;
+      const savedUnearthedIds = savedIds ? new Set<string>(JSON.parse(savedIds)) : new Set<string>();
+      
+      setUnearthedCount(savedUnearthedCount);
+      setUnearthedIds(savedUnearthedIds);
+      
+      // Load previously displayed leads on page refresh
+      if (allLeads.length > 0 && savedUnearthedIds.size > 0) {
+        const previouslyUnearthed = allLeads.filter(lead => savedUnearthedIds.has(lead.id));
+        setDisplayedLeads(previouslyUnearthed);
+      }
+
     } else {
       localStorage.setItem('truLeadAiUnearthedCount', '0');
       localStorage.setItem('truLeadAiLastUnearthDate', today);
@@ -101,12 +158,13 @@ export default function DashboardPage() {
     }
   }, []);
 
+  // Effect to re-populate displayed leads when `allLeads` is loaded after initial `unearthedIds`
   useEffect(() => {
-    if (allLeads.length > 0 && unearthedIds.size > 0) {
-        const previouslyUnearthed = allLeads.filter(lead => unearthedIds.has(lead.id));
+    if (allLeads.length > 0 && unearthedIds.size > 0 && displayedLeads.length === 0) {
+        const previouslyUnearthed = allLeads.filter(lead => unearthedIds.has(lead.id)).sort((a, b) => b.company.localeCompare(a.company));
         setDisplayedLeads(previouslyUnearthed);
     }
-  }, [allLeads, unearthedIds]);
+  }, [allLeads, unearthedIds, displayedLeads]);
 
 
   useEffect(() => {
@@ -116,12 +174,47 @@ export default function DashboardPage() {
     }
   }, [notification]);
 
+  const handleFilterChange = (filterType: keyof typeof filters, value: string) => {
+    setFilters(prev => {
+        const newFilters = {...prev, [filterType]: value};
+        // Reset dependent filters
+        if (filterType === 'continent') {
+            newFilters.country = '';
+            newFilters.region = '';
+            newFilters.city = '';
+        }
+        if (filterType === 'country') {
+            newFilters.region = '';
+            newFilters.city = '';
+        }
+        if (filterType === 'region') {
+            newFilters.city = '';
+        }
+        return newFilters;
+    });
+  };
+  
   const handleUnearth = useCallback(() => {
     if (isLoading || unearthedCount >= DAILY_LIMIT || allLeads.length === 0) return;
     setIsLoading(true);
 
     setTimeout(() => {
-      const availableLeads = allLeads.filter(lead => !unearthedIds.has(lead.id));
+        const filteredLeads = allLeads.filter(lead => {
+            const { continent, country, region, city, category } = filters;
+            
+            const hasLocation = (type: string, value: string) => 
+                !value || lead.locations.some(l => l.location_type === type && l.value === value);
+
+            const hasCategory = !category || lead.industry.includes(category);
+            
+            return hasLocation('continent', continent) &&
+                   hasLocation('country', country) &&
+                   hasLocation('region', region) &&
+                   hasLocation('city', city) &&
+                   hasCategory;
+        });
+
+      const availableLeads = filteredLeads.filter(lead => !unearthedIds.has(lead.id));
 
       const newLeadsBatch = [];
       const newIds = new Set(unearthedIds);
@@ -146,9 +239,9 @@ export default function DashboardPage() {
       localStorage.setItem('truLeadAiUnearthedIds', JSON.stringify(Array.from(newIds)));
 
       setIsLoading(false);
-      setNotification(newLeadsBatch.length > 0 ? `${newLeadsBatch.length} new leads unearthed!` : 'No new leads found.');
+      setNotification(newLeadsBatch.length > 0 ? `${newLeadsBatch.length} new leads unearthed!` : 'No new leads found with current filters.');
     }, 1500);
-  }, [allLeads, unearthedIds, unearthedCount, isLoading]);
+  }, [allLeads, unearthedIds, unearthedCount, isLoading, filters]);
   
   const isLimitReached = unearthedCount >= DAILY_LIMIT;
 
@@ -158,6 +251,14 @@ export default function DashboardPage() {
       <main className="flex-grow container mx-auto px-4 py-8 flex flex-col">
         <div className="w-full max-w-4xl mx-auto flex flex-col items-center gap-6">
           <ProgressMeter unearthed={unearthedCount} limit={DAILY_LIMIT} />
+          
+          <LeadFilters 
+            filters={filters}
+            onFilterChange={handleFilterChange}
+            locationHierarchy={locationHierarchy}
+            categories={categories}
+          />
+
           <UnearthButton
             onClick={handleUnearth}
             isLoading={isLoading}

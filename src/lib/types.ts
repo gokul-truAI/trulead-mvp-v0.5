@@ -1,4 +1,5 @@
 
+
 export interface LocationIdentifier {
   location_type: string;
   value: string;
@@ -58,3 +59,13 @@ export interface RawLead {
     [key: string]: any;
   };
 }
+
+export type LocationHierarchy = {
+  [continent: string]: {
+    [country: string]: {
+      [region: string]: {
+        [city: string]: {};
+      };
+    };
+  };
+};
