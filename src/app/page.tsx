@@ -14,17 +14,24 @@ import { format } from 'date-fns';
 
 const mapRawLeadToLead = (rawLead: RawLead): Lead => {
   const properties = rawLead.properties;
-  
-  const categories = properties.categories?.map(c => c.value).join(', ') || 'N/A';
 
-  const city = properties.location_identifiers?.find(l => l.location_type === 'city')?.value;
-  const region = properties.location_identifiers?.find(l => l.location_type === 'region')?.value;
-  const country = properties.location_identifiers?.find(l => l.location_type === 'country')?.value;
+  const categories =
+    properties.categories?.map((c) => c.value).join(', ') || 'N/A';
+
+  const city = properties.location_identifiers?.find(
+    (l) => l.location_type === 'city'
+  )?.value;
+  const region = properties.location_identifiers?.find(
+    (l) => l.location_type === 'region'
+  )?.value;
+  const country = properties.location_identifiers?.find(
+    (l) => l.location_type === 'country'
+  )?.value;
   let location = 'N/A';
   if (city && region && country) {
     location = `${city}, ${region}, ${country}`;
   } else {
-    location = properties.location_identifiers?.map(l => l.value).join(', ') || 'N/A';
+    location = properties.location_identifiers?.map((l) => l.value).join(', ') || 'N/A';
   }
 
   let foundedOn = 'N/A';
@@ -35,7 +42,7 @@ const mapRawLeadToLead = (rawLead: RawLead): Lead => {
       // Keep N/A if date is invalid
     }
   }
-  
+
   return {
     id: rawLead.uuid,
     company: properties.identifier?.value || 'N/A',
@@ -50,7 +57,7 @@ const mapRawLeadToLead = (rawLead: RawLead): Lead => {
     facebook: properties.facebook?.value || null,
     postalCode: properties.hq_postal_code || 'N/A',
     foundedOn: foundedOn,
-    contactName: 'N/A'
+    contactName: 'N/A',
   };
 };
 
@@ -76,57 +83,57 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchLeads = async () => {
       try {
-        const response = await fetch('/data/leads.json');
+        const response = await fetch('/data/leadseurope.json');
         if (!response.ok) {
           throw new Error('Failed to fetch leads');
         }
-        const rawData: { entities: RawLead[] } = await response.json();
-        
-        if (rawData && Array.isArray(rawData.entities)) {
-          const mappedLeads = rawData.entities.map(mapRawLeadToLead);
-          setAllLeads(mappedLeads);
+        const rawData = await response.json();
 
-          // Extract filters
-          const newLocationHierarchy: LocationHierarchy = {};
-          const newCategories = new Set<string>();
+        if (Array.isArray(rawData)) {
+            const mappedLeads = rawData.map(mapRawLeadToLead);
+            setAllLeads(mappedLeads);
+  
+            // Extract filters
+            const newLocationHierarchy: LocationHierarchy = {};
+            const newCategories = new Set<string>();
+  
+            rawData.forEach(lead => {
+              let currentLevel: any = newLocationHierarchy;
+  
+              const continent = lead.properties.location_identifiers?.find(l => l.location_type === 'continent')?.value;
+              const country = lead.properties.location_identifiers?.find(l => l.location_type === 'country')?.value;
+              const region = lead.properties.location_identifiers?.find(l => l.location_type === 'region')?.value;
+              const city = lead.properties.location_identifiers?.find(l => l.location_type === 'city')?.value;
 
-          rawData.entities.forEach(lead => {
-            let currentLevel: any = newLocationHierarchy;
-            
-            const continent = lead.properties.location_identifiers?.find(l => l.location_type === 'continent')?.value;
-            const country = lead.properties.location_identifiers?.find(l => l.location_type === 'country')?.value;
-            const region = lead.properties.location_identifiers?.find(l => l.location_type === 'region')?.value;
-            const city = lead.properties.location_identifiers?.find(l => l.location_type === 'city')?.value;
-
-            if (continent) {
-              if (!currentLevel[continent]) currentLevel[continent] = {};
-              currentLevel = currentLevel[continent];
-              if (country) {
-                if (!currentLevel[country]) currentLevel[country] = {};
-                currentLevel = currentLevel[country];
-                 if (region) {
-                  if (!currentLevel[region]) currentLevel[region] = {};
-                  currentLevel = currentLevel[region];
-                  if (city) {
-                    if (!currentLevel[city]) currentLevel[city] = {};
+              if (continent) {
+                if (!currentLevel[continent]) currentLevel[continent] = {};
+                currentLevel = currentLevel[continent];
+                if (country) {
+                  if (!currentLevel[country]) currentLevel[country] = {};
+                  currentLevel = currentLevel[country];
+                   if (region) {
+                    if (!currentLevel[region]) currentLevel[region] = {};
+                    currentLevel = currentLevel[region];
+                    if (city) {
+                      if (!currentLevel[city]) currentLevel[city] = {};
+                    }
                   }
                 }
               }
-            }
-            
-            lead.properties.categories?.forEach(cat => {
-              if (cat.value) {
-                newCategories.add(cat.value);
-              }
+  
+              lead.properties.categories?.forEach(cat => {
+                if (cat.value) {
+                  newCategories.add(cat.value);
+                }
+              });
             });
-          });
-
-          setLocationHierarchy(newLocationHierarchy);
-          setCategories(Array.from(newCategories).sort());
-
-        } else {
-           console.error('Lead data is not in a recognized array format:', rawData);
-        }
+  
+            setLocationHierarchy(newLocationHierarchy);
+            setCategories(Array.from(newCategories).sort());
+  
+          } else {
+            console.error('Lead data is not in a recognized array format:', rawData);
+          }
       } catch (error) {
         console.error('Failed to load leads:', error);
       }
@@ -158,14 +165,6 @@ export default function DashboardPage() {
       localStorage.setItem('truLeadAiUnearthedIds', '[]');
       setUnearthedCount(0);
       setUnearthedIds(new Set());
-    }
-  }, []);
-
-  // Effect to re-populate displayed leads when `allLeads` is loaded after initial `unearthedIds`
-  useEffect(() => {
-    if (allLeads.length > 0 && unearthedIds.size > 0 && displayedLeads.length === 0) {
-        const previouslyUnearthed = allLeads.filter(lead => unearthedIds.has(lead.id)).sort((a, b) => b.company.localeCompare(a.company));
-        setDisplayedLeads(previouslyUnearthed);
     }
   }, [allLeads, unearthedIds, displayedLeads]);
 
