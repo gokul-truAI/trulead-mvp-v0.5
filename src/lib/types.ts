@@ -7,6 +7,8 @@ export interface LocationIdentifier {
   entity_def_id: string;
 }
 
+export type LeadStatus = 'new' | 'high-potential' | 'follow-up' | 'not-connected';
+
 export interface Lead {
   id: string;
   company: string;
@@ -22,6 +24,8 @@ export interface Lead {
   facebook: string | null;
   postalCode: string;
   foundedOn: string;
+  status: LeadStatus;
+  browsed: boolean;
 }
 
 export interface RawLead {

@@ -1,5 +1,5 @@
 
-import type { Lead } from '@/lib/types';
+import type { Lead, LeadStatus } from '@/lib/types';
 import {
   Accordion,
   AccordionContent,
@@ -10,13 +10,16 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
     Building2, Briefcase, MapPin, Mail, Link as LinkIcon, FileText,
-    Phone, Linkedin, Facebook, Calendar, Pin
+    Phone, Linkedin, Facebook, Calendar, Pin, Star, Repeat, XCircle, CheckCircle
 } from 'lucide-react';
 import AiInsight from './ai-insight';
+import { Button } from '../ui/button';
+import { cn } from '@/lib/utils';
 
 interface LeadCardProps {
   lead: Lead;
   animationStyle: React.CSSProperties;
+  onUpdateLead: (leadId: string, updates: Partial<Lead>) => void;
 }
 
 const SocialLink = ({ href, icon, label }: { href: string | null; icon: React.ReactNode; label: string }) => {
@@ -28,17 +31,40 @@ const SocialLink = ({ href, icon, label }: { href: string | null; icon: React.Re
   );
 };
 
+const StatusBadge = ({ status }: { status: LeadStatus }) => {
+    const statusMap = {
+        'new': { label: 'New', icon: <Star className="h-3 w-3" />, variant: 'secondary' as const },
+        'high-potential': { label: 'High Potential', icon: <CheckCircle className="h-3 w-3" />, variant: 'default' as const },
+        'follow-up': { label: 'Need Follow-up', icon: <Repeat className="h-3 w-3" />, variant: 'outline' as const },
+        'not-connected': { label: 'Not Connected', icon: <XCircle className="h-3 w-3" />, variant: 'destructive' as const },
+    };
+    const currentStatus = statusMap[status];
 
-export default function LeadCard({ lead, animationStyle }: LeadCardProps) {
+    return <Badge variant={currentStatus.variant}>{currentStatus.icon}<span className="ml-1">{currentStatus.label}</span></Badge>
+}
+
+
+export default function LeadCard({ lead, animationStyle, onUpdateLead }: LeadCardProps) {
   const preventAction = (e: React.ClipboardEvent | React.MouseEvent) => {
     e.preventDefault();
     return false;
   };
+
+  const handleStatusChange = (e: React.MouseEvent, newStatus: LeadStatus) => {
+    e.stopPropagation(); // prevent accordion from toggling
+    onUpdateLead(lead.id, { status: newStatus });
+  }
+
+  const handleAccordionToggle = (isOpen: boolean) => {
+    if (isOpen && !lead.browsed) {
+      onUpdateLead(lead.id, { browsed: true });
+    }
+  };
   
   return (
     <div style={animationStyle} className="animate-fade-in opacity-0" onCopy={preventAction} onContextMenu={preventAction}>
-      <Card className="user-select-none shadow-md hover:shadow-xl transition-shadow duration-300">
-        <Accordion type="single" collapsible>
+      <Card className={cn("user-select-none shadow-md hover:shadow-xl transition-all duration-300", lead.browsed && "opacity-70 blur-[0.5px]")}>
+        <Accordion type="single" collapsible onValueChange={(value) => handleAccordionToggle(!!value)}>
           <AccordionItem value={lead.id} className="border-b-0">
             <AccordionTrigger className="p-4 hover:no-underline">
               <div className="flex flex-col md:flex-row md:items-center justify-between w-full text-left gap-4">
@@ -51,14 +77,21 @@ export default function LeadCard({ lead, animationStyle }: LeadCardProps) {
                     </div>
                 </div>
                 <div className="flex flex-wrap gap-2 justify-start md:justify-end">
+                  <StatusBadge status={lead.status} />
                   <Badge variant="secondary"><Briefcase className="mr-1 h-3 w-3" />{lead.industry}</Badge>
                   <Badge variant="secondary"><MapPin className="mr-1 h-3 w-3" />{lead.location}</Badge>
                 </div>
               </div>
             </AccordionTrigger>
             <AccordionContent className="p-4 pt-0 space-y-6">
+                <div className="border-t pt-4 flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-medium mr-2">Mark as:</p>
+                    <Button size="sm" variant="outline" onClick={(e) => handleStatusChange(e, 'high-potential')}><CheckCircle className="mr-2 h-4 w-4" />High Potential</Button>
+                    <Button size="sm" variant="outline" onClick={(e) => handleStatusChange(e, 'follow-up')}><Repeat className="mr-2 h-4 w-4" />Need Follow-up</Button>
+                    <Button size="sm" variant="outline" onClick={(e) => handleStatusChange(e, 'not-connected')}><XCircle className="mr-2 h-4 w-4" />Not Connected</Button>
+                </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                
                 <div className="flex items-start gap-2 col-span-1 md:col-span-2">
                     <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
                     <span className="font-medium whitespace-nowrap">Description:</span> 

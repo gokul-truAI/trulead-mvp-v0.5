@@ -4,9 +4,10 @@ import { Telescope } from 'lucide-react';
 
 interface DiscoveryLogProps {
   leads: Lead[];
+  onUpdateLead: (leadId: string, updates: Partial<Lead>) => void;
 }
 
-export default function DiscoveryLog({ leads }: DiscoveryLogProps) {
+export default function DiscoveryLog({ leads, onUpdateLead }: DiscoveryLogProps) {
   if (leads.length === 0) {
     return (
       <div className="text-center py-16 px-4 border-2 border-dashed rounded-lg">
@@ -29,6 +30,7 @@ export default function DiscoveryLog({ leads }: DiscoveryLogProps) {
           key={lead.id}
           lead={lead}
           animationStyle={{ animationDelay: `${index * 120}ms` }}
+          onUpdateLead={onUpdateLead}
         />
       ))}
     </div>
