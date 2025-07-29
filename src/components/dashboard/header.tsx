@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Bot } from 'lucide-react';
 
 const NavLinks = () => (
@@ -44,6 +44,13 @@ export default function Header() {
                     </Button>
                 </SheetTrigger>
                 <SheetContent side="right">
+                    <SheetHeader>
+                        <SheetTitle>
+                            <Link href="/" className="text-2xl font-bold text-primary flex items-center gap-2">
+                              TruLead<span className="text-accent">AI</span>
+                            </Link>
+                        </SheetTitle>
+                    </SheetHeader>
                     <nav className="flex flex-col gap-4 mt-8">
                         <NavLinks />
                         <Button variant="outline">Sign In</Button>
