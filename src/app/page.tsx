@@ -10,24 +10,47 @@ import UnearthButton from '@/components/dashboard/unearth-button';
 import DiscoveryLog from '@/components/dashboard/discovery-log';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Rocket } from 'lucide-react';
+import { format } from 'date-fns';
 
 const mapRawLeadToLead = (rawLead: RawLead): Lead => {
   const properties = rawLead.properties;
-  const company = properties.identifier?.value || 'N/A';
-  const industries = properties.categories?.map(c => c.value).join(', ') || 'N/A';
-  const city = properties.location_identifiers?.find(l => l.location_type === 'city')?.value;
-  const country = properties.location_identifiers?.find(l => l.location_type === 'country')?.value;
-  const location = city && country ? `${city}, ${country}` : city || country || 'N/A';
+  
+  const categories = properties.categories?.map(c => c.value).join(', ') || 'N/A';
 
+  const city = properties.location_identifiers?.find(l => l.location_type === 'city')?.value;
+  const region = properties.location_identifiers?.find(l => l.location_type === 'region')?.value;
+  const country = properties.location_identifiers?.find(l => l.location_type === 'country')?.value;
+  let location = 'N/A';
+  if (city && region && country) {
+    location = `${city}, ${region}, ${country}`;
+  } else {
+    location = properties.location_identifiers?.map(l => l.value).join(', ') || 'N/A';
+  }
+
+  let foundedOn = 'N/A';
+  if (properties.founded_on?.value) {
+    try {
+      foundedOn = format(new Date(properties.founded_on.value), 'yyyy');
+    } catch (e) {
+      // Keep N/A if date is invalid
+    }
+  }
+  
   return {
     id: rawLead.uuid,
-    company: company,
-    industry: industries,
+    company: properties.identifier?.value || 'N/A',
+    description: properties.short_description || 'No description available.',
+    industry: categories,
     location: location,
-    contactName: 'N/A', // Not available in the provided structure
+    locations: properties.location_identifiers || [],
     email: properties.contact_email || 'N/A',
     website: properties.website?.value || '#',
-    description: properties.short_description || 'No description available.',
+    phoneNumber: properties.phone_number || 'N/A',
+    linkedin: properties.linkedin?.value || null,
+    facebook: properties.facebook?.value || null,
+    postalCode: properties.hq_postal_code || 'N/A',
+    foundedOn: foundedOn,
+    contactName: 'N/A' // This field doesn't exist in the source data
   };
 };
 
@@ -46,9 +69,10 @@ export default function DashboardPage() {
         if (!response.ok) {
           throw new Error('Failed to fetch leads');
         }
-        const rawData: RawLead[] = await response.json();
-        if (Array.isArray(rawData)) {
-          const mappedLeads = rawData.map(mapRawLeadToLead);
+        const rawData: { entities: RawLead[] } = await response.json();
+        
+        if (rawData && Array.isArray(rawData.entities)) {
+          const mappedLeads = rawData.entities.map(mapRawLeadToLead);
           setAllLeads(mappedLeads);
         } else {
            console.error('Lead data is not in a recognized array format:', rawData);
