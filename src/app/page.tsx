@@ -88,11 +88,10 @@ export default function MyLeadsPage() {
   });
 
   useEffect(() => {
-    // Read category from URL
     const params = new URLSearchParams(window.location.search);
     const category = params.get('category');
     if (category) {
-      setFilters(prev => ({...prev, category}));
+      handleFilterChange('category', category);
     }
   }, []);
 
@@ -145,8 +144,15 @@ export default function MyLeadsPage() {
     fetchLeads();
 
     const savedRequests = localStorage.getItem('truLeadAiLeadRequests');
-    if (savedRequests) {
-        setRequests(JSON.parse(savedRequests));
+    if (savedRequests && savedRequests !== 'undefined') {
+        try {
+            const parsedRequests = JSON.parse(savedRequests);
+            if (Array.isArray(parsedRequests)) {
+                setRequests(parsedRequests);
+            }
+        } catch (e) {
+            console.error("Failed to parse lead requests from localStorage", e);
+        }
     }
   }, []);
 
@@ -159,14 +165,25 @@ export default function MyLeadsPage() {
 
     if (savedDate === today) {
       if (savedCount) setUnearthedCount(parseInt(savedCount, 10));
-      if (savedIds) setUnearthedIds(new Set<string>(JSON.parse(savedIds)));
-      if (savedLeads) {
-        const parsedLeads = JSON.parse(savedLeads);
-        setDisplayedLeads(parsedLeads);
-      } else if (savedIds && allLeads.length > 0) {
-        const ids = new Set<string>(JSON.parse(savedIds));
-        const previouslyUnearthed = allLeads.filter(lead => ids.has(lead.id));
-        setDisplayedLeads(previouslyUnearthed);
+      if (savedIds && savedIds !== 'undefined') {
+          try {
+              const parsedIds = JSON.parse(savedIds);
+              if(Array.isArray(parsedIds)) {
+                setUnearthedIds(new Set<string>(parsedIds));
+              }
+          } catch(e) {
+              console.error("Failed to parse unearthed ids", e);
+          }
+      }
+      if (savedLeads && savedLeads !== 'undefined') {
+        try {
+            const parsedLeads = JSON.parse(savedLeads);
+            if(Array.isArray(parsedLeads)) {
+                setDisplayedLeads(parsedLeads);
+            }
+        } catch (e) {
+            console.error("Failed to parse displayed leads", e)
+        }
       }
     } else {
       localStorage.setItem('truLeadAiUnearthedCount', '0');
@@ -177,7 +194,7 @@ export default function MyLeadsPage() {
       setUnearthedIds(new Set());
       setDisplayedLeads([]);
     }
-  }, [allLeads]);
+  }, []);
 
   useEffect(() => {
     if (allLeads.length > 0) {
@@ -200,14 +217,24 @@ export default function MyLeadsPage() {
             newFilters.country = '';
             newFilters.region = '';
             newFilters.city = '';
-        }
-        if (filterType === 'country') {
+        } else if (filterType === 'country') {
             newFilters.region = '';
             newFilters.city = '';
-        }
-        if (filterType === 'region') {
+        } else if (filterType === 'region') {
             newFilters.city = '';
         }
+        
+        // Update URL for category changes to allow bookmarking/sharing
+        if (filterType === 'category') {
+            const params = new URLSearchParams(window.location.search);
+            if (value) {
+                params.set('category', value);
+            } else {
+                params.delete('category');
+            }
+            window.history.pushState({}, '', `${window.location.pathname}?${params.toString()}`);
+        }
+        
         return newFilters;
     });
   };
@@ -218,15 +245,18 @@ export default function MyLeadsPage() {
 
     setTimeout(() => {
         const filteredLeads = allLeads.filter(lead => {
-            const { continent, country, region, city } = filters;
+            const { continent, country, region, city, category } = filters;
             
             const hasLocation = (type: string, value: string) => 
                 !value || lead.locations.some(l => l.location_type === type && l.value === value);
 
+            const hasCategory = !category || lead.industry.toLowerCase().includes(category.toLowerCase());
+
             return hasLocation('continent', continent) &&
                    hasLocation('country', country) &&
                    hasLocation('region', region) &&
-                   hasLocation('city', city);
+                   hasLocation('city', city) &&
+                   hasCategory;
         });
 
       const availableLeads = filteredLeads.filter(lead => !unearthedIds.has(lead.id));
@@ -273,7 +303,7 @@ export default function MyLeadsPage() {
     }
     return displayedLeads.filter(lead => lead.industry.toLowerCase().includes(filters.category!.toLowerCase()));
   };
-
+  
   const filteredLeads = getFilteredLeads();
   const isLimitReached = unearthedCount >= DAILY_LIMIT;
 
@@ -304,11 +334,11 @@ export default function MyLeadsPage() {
                         <TableCell>{format(new Date(req.requestDate), 'PP')}</TableCell>
                         <TableCell>
                           {req.status === 'Ready' ? (
-                            <Link href={`/?category=${encodeURIComponent(req.category)}`}>
+                            <Button variant="link" size="sm" className="p-0 h-auto" onClick={() => handleFilterChange('category', req.category)}>
                                 <Badge variant="default" className="cursor-pointer hover:bg-primary/80">
                                     {req.status}
                                 </Badge>
-                            </Link>
+                            </Button>
                           ) : (
                             <Badge variant={req.status === 'Processing' ? 'secondary' : 'outline'}>
                                 {req.status}
@@ -365,3 +395,5 @@ export default function MyLeadsPage() {
     </div>
   );
 }
+
+    
