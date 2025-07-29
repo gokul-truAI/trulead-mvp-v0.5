@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import type { Lead, RawLead, LocationHierarchy, LeadStatus } from '@/lib/types';
+import type { Lead, RawLead, LocationHierarchy, LeadStatus, LeadRequest } from '@/lib/types';
 import { BATCH_SIZE, DAILY_LIMIT } from '@/lib/constants';
 import Header from '@/components/dashboard/header';
 import ProgressMeter from '@/components/dashboard/progress-meter';
@@ -11,6 +11,10 @@ import LeadFilters from '@/components/dashboard/lead-filters';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Rocket } from 'lucide-react';
 import { format } from 'date-fns';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
 
 const mapRawLeadToLead = (rawLead: RawLead): Lead => {
   const properties = rawLead.properties;
@@ -70,6 +74,7 @@ export default function MyLeadsPage() {
   const [unearthedCount, setUnearthedCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [notification, setNotification] = useState<string | null>(null);
+  const [requests, setRequests] = useState<LeadRequest[]>([]);
 
   // Filter state
   const [locationHierarchy, setLocationHierarchy] = useState<LocationHierarchy>({});
@@ -78,7 +83,17 @@ export default function MyLeadsPage() {
     country: '',
     region: '',
     city: '',
+    category: '',
   });
+
+  useEffect(() => {
+    // Read category from URL
+    const params = new URLSearchParams(window.location.search);
+    const category = params.get('category');
+    if (category) {
+      setFilters(prev => ({...prev, category}));
+    }
+  }, []);
 
   // Effect to fetch initial data and populate filters
   useEffect(() => {
@@ -127,6 +142,11 @@ export default function MyLeadsPage() {
     };
 
     fetchLeads();
+
+    const savedRequests = localStorage.getItem('truLeadAiLeadRequests');
+    if (savedRequests) {
+        setRequests(JSON.parse(savedRequests));
+    }
   }, []);
 
   const loadFromLocalStorage = useCallback(() => {
@@ -140,7 +160,8 @@ export default function MyLeadsPage() {
       if (savedCount) setUnearthedCount(parseInt(savedCount, 10));
       if (savedIds) setUnearthedIds(new Set<string>(JSON.parse(savedIds)));
       if (savedLeads) {
-        setDisplayedLeads(JSON.parse(savedLeads));
+        const parsedLeads = JSON.parse(savedLeads);
+        setDisplayedLeads(parsedLeads);
       } else if (savedIds && allLeads.length > 0) {
         const ids = new Set<string>(JSON.parse(savedIds));
         const previouslyUnearthed = allLeads.filter(lead => ids.has(lead.id));
@@ -244,6 +265,13 @@ export default function MyLeadsPage() {
     setDisplayedLeads(newDisplayedLeads);
     localStorage.setItem('truLeadAiDisplayedLeads', JSON.stringify(newDisplayedLeads));
   };
+
+  const getFilteredLeads = () => {
+    if (!filters.category) {
+        return displayedLeads;
+    }
+    return displayedLeads.filter(lead => lead.industry.toLowerCase().includes(filters.category!.toLowerCase()));
+  }
   
   const isLimitReached = unearthedCount >= DAILY_LIMIT;
 
@@ -278,8 +306,51 @@ export default function MyLeadsPage() {
             </div>
           )}
         </div>
-        <div className="w-full max-w-4xl mx-auto flex-grow mt-8">
-            <DiscoveryLog leads={displayedLeads} onUpdateLead={updateLead} />
+        <div className="w-full max-w-4xl mx-auto flex-grow mt-8 space-y-8">
+            <Card>
+              <CardHeader>
+                <CardTitle>Your Lead Requests</CardTitle>
+              </CardHeader>
+              <CardContent className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Region</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {requests.length > 0 ? requests.map((req) => (
+                      <TableRow key={req.id}>
+                        <TableCell className="min-w-[150px]">{req.category}</TableCell>
+                        <TableCell>{req.continent}</TableCell>
+                        <TableCell>{format(new Date(req.requestDate), 'PP')}</TableCell>
+                        <TableCell>
+                          {req.status === 'Ready' ? (
+                            <Link href={`/?category=${encodeURIComponent(req.category)}`}>
+                                <Badge variant="default" className="cursor-pointer hover:bg-primary/80">
+                                    {req.status}
+                                </Badge>
+                            </Link>
+                          ) : (
+                            <Badge variant={req.status === 'Processing' ? 'secondary' : 'outline'}>
+                                {req.status}
+                            </Badge>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    )) : (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center">No requests submitted yet.</TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+            <DiscoveryLog leads={getFilteredLeads()} onUpdateLead={updateLead} />
         </div>
       </main>
     </div>

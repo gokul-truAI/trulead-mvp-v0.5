@@ -10,18 +10,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import type { LeadRequest } from '@/lib/types';
+import Link from 'next/link';
 
 type FormInputs = {
   category: string;
   continent: string;
-};
-
-type LeadRequest = {
-  id: string;
-  category: string;
-  continent: string;
-  status: 'Pending' | 'Processing' | 'Ready';
-  requestDate: string;
 };
 
 const continents = ['North America', 'South America', 'Europe', 'Asia', 'Africa', 'Australia', 'Antarctica'];
@@ -141,9 +135,17 @@ export default function RequestLeadsPage() {
                         <TableCell>{req.continent}</TableCell>
                         <TableCell>{format(new Date(req.requestDate), 'PP')}</TableCell>
                         <TableCell>
-                          <Badge variant={req.status === 'Ready' ? 'default' : (req.status === 'Processing' ? 'secondary' : 'outline')}>
-                            {req.status}
-                          </Badge>
+                           {req.status === 'Ready' ? (
+                            <Link href={`/?category=${encodeURIComponent(req.category)}`}>
+                                <Badge variant="default" className="cursor-pointer hover:bg-primary/80">
+                                    {req.status}
+                                </Badge>
+                            </Link>
+                          ) : (
+                            <Badge variant={req.status === 'Processing' ? 'secondary' : 'outline'}>
+                                {req.status}
+                            </Badge>
+                          )}
                         </TableCell>
                       </TableRow>
                     )) : (

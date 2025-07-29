@@ -73,3 +73,11 @@ export type LocationHierarchy = {
     };
   };
 };
+
+export type LeadRequest = {
+  id: string;
+  category: string;
+  continent: string;
+  status: 'Pending' | 'Processing' | 'Ready';
+  requestDate: string;
+};
