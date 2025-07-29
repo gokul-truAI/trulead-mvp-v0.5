@@ -49,7 +49,7 @@ export default function LeadFilters({
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="">All Categories</SelectItem>
-                        {categories.map((cat) => (
+                        {categories.filter(cat => cat).map((cat) => (
                         <SelectItem key={cat} value={cat}>
                             {cat}
                         </SelectItem>
@@ -63,7 +63,7 @@ export default function LeadFilters({
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="">All Continents</SelectItem>
-                        {continents.map((continent) => (
+                        {continents.filter(c => c).map((continent) => (
                         <SelectItem key={continent} value={continent}>
                             {continent}
                         </SelectItem>
@@ -77,7 +77,7 @@ export default function LeadFilters({
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="">All Countries</SelectItem>
-                        {countries.map((country) => (
+                        {countries.filter(c => c).map((country) => (
                         <SelectItem key={country} value={country}>
                             {country}
                         </SelectItem>
@@ -91,7 +91,7 @@ export default function LeadFilters({
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="">All Regions</SelectItem>
-                        {regions.map((region) => (
+                        {regions.filter(r => r).map((region) => (
                         <SelectItem key={region} value={region}>
                             {region}
                         </SelectItem>
@@ -105,7 +105,7 @@ export default function LeadFilters({
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="">All Cities</SelectItem>
-                        {cities.map((city) => (
+                        {cities.filter(c => c).map((city) => (
                         <SelectItem key={city} value={city}>
                             {city}
                         </SelectItem>
