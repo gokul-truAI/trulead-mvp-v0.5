@@ -5,24 +5,41 @@ import Header from '@/components/dashboard/header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { PieChart, Pie, Cell } from 'recharts';
-import type { Lead } from '@/lib/types';
+import type { Lead, LeadRequest } from '@/lib/types';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
 
 const COLORS = ['#4285F4', '#8E44AD', '#34A853', '#FBBC05', '#EA4335'];
 
 export default function DashboardPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
-  const [leadRequests, setLeadRequests] = useState<any[]>([]);
+  const [leadRequests, setLeadRequests] = useState<LeadRequest[]>([]);
+  const router = useRouter();
+
+  useEffect(() => {
+    const role = localStorage.getItem('truLeadAiUserRole');
+    if (role !== 'user') {
+      router.push('/');
+    }
+  }, [router]);
 
   useEffect(() => {
     const savedLeads = localStorage.getItem('truLeadAiDisplayedLeads');
-    if (savedLeads) {
-      setLeads(JSON.parse(savedLeads));
+    if (savedLeads && savedLeads !== 'undefined') {
+      try {
+        setLeads(JSON.parse(savedLeads));
+      } catch (e) {
+        console.error("Failed to parse leads from localStorage", e);
+      }
     }
     const savedRequests = localStorage.getItem('truLeadAiLeadRequests');
-    if (savedRequests) {
-      setLeadRequests(JSON.parse(savedRequests));
+    if (savedRequests && savedRequests !== 'undefined') {
+       try {
+        setLeadRequests(JSON.parse(savedRequests));
+      } catch (e) {
+        console.error("Failed to parse requests from localStorage", e);
+      }
     }
   }, []);
 
@@ -36,7 +53,7 @@ export default function DashboardPage() {
     { name: 'New', value: leads.filter(l => l.status === 'new').length },
   ];
 
-  const categoryRequestData = leadRequests.reduce((acc, req) => {
+  const categoryRequestData = leadRequests.reduce((acc: {[key: string]: number}, req) => {
     const category = req.category;
     if (!acc[category]) {
       acc[category] = 0;
@@ -45,7 +62,7 @@ export default function DashboardPage() {
     return acc;
   }, {});
 
-  const categoryChartData = Object.entries(categoryRequestData).map(([name, value]) => ({ name, value }));
+  const categoryChartData = Object.entries(categoryRequestData).map(([name, value]) => ({ name, value: value as number }));
   
   const browsedData = [
     { name: 'Browsed', value: browsedCount },
@@ -56,7 +73,7 @@ export default function DashboardPage() {
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Header />
       <main className="flex-grow container mx-auto px-4 py-8">
-        <h2 className="text-3xl font-bold mb-6">Dashboard</h2>
+        <h2 className="text-3xl font-bold mb-6">User Dashboard</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Card>
             <CardHeader>
@@ -132,7 +149,7 @@ export default function DashboardPage() {
              </CardHeader>
              <CardContent className="flex flex-wrap gap-4">
                 {categoryChartData.map(cat => (
-                    <Link key={cat.name} href={`/?category=${cat.name}`} passHref>
+                    <Link key={cat.name} href={`/leads?category=${cat.name}`} passHref>
                         <Button variant="outline">Browse '{cat.name}' Leads</Button>
                     </Link>
                 ))}

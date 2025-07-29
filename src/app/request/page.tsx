@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import Header from '@/components/dashboard/header';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import type { LeadRequest } from '@/lib/types';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 type FormInputs = {
   category: string;
@@ -25,24 +26,49 @@ export default function RequestLeadsPage() {
   const [requests, setRequests] = useState<LeadRequest[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionMessage, setSubmissionMessage] = useState('');
+  const router = useRouter();
 
   useEffect(() => {
-    const savedRequests = localStorage.getItem('truLeadAiLeadRequests');
-    if (savedRequests) {
-      setRequests(JSON.parse(savedRequests));
+    const role = localStorage.getItem('truLeadAiUserRole');
+    if (role !== 'user') {
+      router.push('/');
     }
-    // Mock processing
+  }, [router]);
+  
+  useEffect(() => {
+    const savedRequestsJSON = localStorage.getItem('truLeadAiLeadRequests');
+    if (savedRequestsJSON && savedRequestsJSON !== 'undefined') {
+        try {
+            const allRequests = JSON.parse(savedRequestsJSON);
+            if (Array.isArray(allRequests)) {
+                setRequests(allRequests);
+            }
+        } catch(e) {
+            console.error("Failed to parse requests", e)
+        }
+    }
+    
+    // This interval mocks an external system (like an admin approval) processing the requests.
     const interval = setInterval(() => {
-      setRequests(prev => {
-        const newRequests = prev.map(req => {
-            if (req.status === 'Pending') return {...req, status: 'Processing' as const};
-            if (req.status === 'Processing') return {...req, status: 'Ready' as const};
-            return req;
-        });
-        localStorage.setItem('truLeadAiLeadRequests', JSON.stringify(newRequests));
-        return newRequests;
+      let requestsUpdated = false;
+      const allRequests = JSON.parse(localStorage.getItem('truLeadAiLeadRequests') || '[]') as LeadRequest[];
+      
+      const newRequests = allRequests.map(req => {
+          // Admin approves 'Pending' -> 'Processing'. This happens on the admin page now.
+          // This simulates the data gathering process.
+          if (req.status === 'Processing') {
+              requestsUpdated = true;
+              return {...req, status: 'Ready' as const};
+          }
+          return req;
       });
-    }, 15000);
+
+      if (requestsUpdated) {
+        localStorage.setItem('truLeadAiLeadRequests', JSON.stringify(newRequests));
+        setRequests(newRequests);
+      }
+    }, 15000); // Check for updates every 15 seconds.
+
     return () => clearInterval(interval);
   }, []);
 
@@ -51,6 +77,9 @@ export default function RequestLeadsPage() {
     setSubmissionMessage('');
 
     setTimeout(() => {
+        const currentRequestsJSON = localStorage.getItem('truLeadAiLeadRequests');
+        const currentRequests: LeadRequest[] = (currentRequestsJSON && currentRequestsJSON !== 'undefined') ? JSON.parse(currentRequestsJSON) : [];
+
       const newRequest: LeadRequest = {
         id: new Date().getTime().toString(),
         category: data.category,
@@ -59,12 +88,12 @@ export default function RequestLeadsPage() {
         requestDate: new Date().toISOString(),
       };
       
-      const updatedRequests = [...requests, newRequest];
+      const updatedRequests = [...currentRequests, newRequest];
       setRequests(updatedRequests);
       localStorage.setItem('truLeadAiLeadRequests', JSON.stringify(updatedRequests));
 
       setIsSubmitting(false);
-      setSubmissionMessage('Your lead request has been submitted successfully!');
+      setSubmissionMessage('Your lead request has been submitted for approval!');
       reset();
       setValue('continent', '');
       setTimeout(() => setSubmissionMessage(''), 3000);
@@ -72,6 +101,9 @@ export default function RequestLeadsPage() {
   };
   
   const selectedContinent = watch('continent');
+
+  // Filter requests to show only those not in 'Pending' state for the user
+  const userVisibleRequests = requests.filter(r => r.status !== 'Pending');
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
@@ -82,6 +114,7 @@ export default function RequestLeadsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Request New Leads</CardTitle>
+                <CardDescription>Submit a request for a new lead category. It will require admin approval.</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -106,7 +139,7 @@ export default function RequestLeadsPage() {
                   </div>
                   
                   <Button type="submit" disabled={isSubmitting} className="w-full">
-                    {isSubmitting ? 'Submitting...' : 'Submit Request'}
+                    {isSubmitting ? 'Submitting...' : 'Submit for Approval'}
                   </Button>
                   {submissionMessage && <p className="text-sm text-green-600 text-center">{submissionMessage}</p>}
                 </form>
@@ -117,6 +150,7 @@ export default function RequestLeadsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Track Your Requests</CardTitle>
+                 <CardDescription>Requests will appear here after admin approval.</CardDescription>
               </CardHeader>
               <CardContent className="overflow-x-auto">
                 <Table>
@@ -129,14 +163,14 @@ export default function RequestLeadsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {requests.length > 0 ? requests.map((req) => (
+                    {userVisibleRequests.length > 0 ? userVisibleRequests.map((req) => (
                       <TableRow key={req.id}>
                         <TableCell className="min-w-[150px]">{req.category}</TableCell>
                         <TableCell>{req.continent}</TableCell>
                         <TableCell>{format(new Date(req.requestDate), 'PP')}</TableCell>
                         <TableCell>
                            {req.status === 'Ready' ? (
-                            <Link href={`/?category=${encodeURIComponent(req.category)}`}>
+                            <Link href={`/leads?category=${encodeURIComponent(req.category)}`}>
                                 <Badge variant="default" className="cursor-pointer hover:bg-primary/80">
                                     {req.status}
                                 </Badge>
@@ -150,7 +184,7 @@ export default function RequestLeadsPage() {
                       </TableRow>
                     )) : (
                       <TableRow>
-                        <TableCell colSpan={4} className="text-center">No requests submitted yet.</TableCell>
+                        <TableCell colSpan={4} className="text-center">No approved requests yet.</TableCell>
                       </TableRow>
                     )}
                   </TableBody>

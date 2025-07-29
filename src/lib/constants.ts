@@ -1,2 +1,2 @@
-export const DAILY_LIMIT = 100;
-export const BATCH_SIZE = 5;
+export const DAILY_LIMIT = 50;
+export const BATCH_SIZE = 10;

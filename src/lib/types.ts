@@ -1,5 +1,6 @@
 
 
+
 export interface LocationIdentifier {
   location_type: string;
   value: string;
@@ -74,10 +75,12 @@ export type LocationHierarchy = {
   };
 };
 
+export type LeadRequestStatus = 'Pending' | 'Processing' | 'Ready';
+
 export type LeadRequest = {
   id: string;
   category: string;
   continent: string;
-  status: 'Pending' | 'Processing' | 'Ready';
+  status: LeadRequestStatus;
   requestDate: string;
 };
