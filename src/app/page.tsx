@@ -42,7 +42,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchLeads = async () => {
       try {
-        const response = await fetch('/data/leads.json');
+        const response = await fetch('/data/leadseurope.json');
         if (!response.ok) {
           throw new Error('Failed to fetch leads');
         }
