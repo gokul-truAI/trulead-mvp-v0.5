@@ -19,9 +19,11 @@ interface LeadFiltersProps {
     country: string;
     region: string;
     city: string;
+    category: string;
   };
   onFilterChange: (filterType: keyof LeadFiltersProps['filters'], value: string) => void;
   locationHierarchy: LocationHierarchy;
+  allCategories: string[];
 }
 
 const FilterSelect = ({
@@ -71,6 +73,7 @@ export default function LeadFilters({
   filters,
   onFilterChange,
   locationHierarchy,
+  allCategories,
 }: LeadFiltersProps) {
   const continents = Object.keys(locationHierarchy).filter(c => c);
   const countries = filters.continent && locationHierarchy[filters.continent] ? Object.keys(locationHierarchy[filters.continent]).filter(c => c) : [];
@@ -80,43 +83,51 @@ export default function LeadFilters({
 
   return (
     <Card className="w-full">
-      <CardContent className="p-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-2 col-span-1 md:col-span-3">
-             <h4 className="text-sm font-medium text-muted-foreground">Filter Your Discovery by Location</h4>
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <FilterSelect
-                  placeholder="Select Continent"
-                  value={filters.continent}
-                  onValueChange={(value) => onFilterChange('continent', value)}
-                  options={continents}
-                />
+      <CardContent className="p-4 space-y-4">
+        <div className="space-y-2">
+           <h4 className="text-sm font-medium text-muted-foreground">Filter Your Discovery by Location</h4>
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <FilterSelect
+                placeholder="Select Continent"
+                value={filters.continent}
+                onValueChange={(value) => onFilterChange('continent', value)}
+                options={continents}
+              />
 
-                <FilterSelect
-                  placeholder="Select Country"
-                  value={filters.country}
-                  onValueChange={(value) => onFilterChange('country', value)}
-                  options={countries}
-                  disabled={!filters.continent}
-                />
+              <FilterSelect
+                placeholder="Select Country"
+                value={filters.country}
+                onValueChange={(value) => onFilterChange('country', value)}
+                options={countries}
+                disabled={!filters.continent}
+              />
 
-                <FilterSelect
-                  placeholder="Select Region"
-                  value={filters.region}
-                  onValueChange={(value) => onFilterChange('region', value)}
-                  options={regions}
-                  disabled={!filters.country}
-                />
-                
-                <FilterSelect
-                  placeholder="Select City"
-                  value={filters.city}
-                  onValueChange={(value) => onFilterChange('city', value)}
-                  options={cities}
-                  disabled={!filters.region}
-                />
-             </div>
-          </div>
+              <FilterSelect
+                placeholder="Select Region"
+                value={filters.region}
+                onValueChange={(value) => onFilterChange('region', value)}
+                options={regions}
+                disabled={!filters.country}
+              />
+              
+              <FilterSelect
+                placeholder="Select City"
+                value={filters.city}
+                onValueChange={(value) => onFilterChange('city', value)}
+                options={cities}
+                disabled={!filters.region}
+              />
+           </div>
+        </div>
+
+        <div className="space-y-2">
+            <h4 className="text-sm font-medium text-muted-foreground">Filter Your Discovery by Category</h4>
+            <FilterSelect
+                placeholder="Select Category"
+                value={filters.category}
+                onValueChange={(value) => onFilterChange('category', value)}
+                options={allCategories}
+            />
         </div>
       </CardContent>
     </Card>

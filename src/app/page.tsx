@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { Lead, RawLead, LocationHierarchy, LeadStatus, LeadRequest } from '@/lib/types';
 import { BATCH_SIZE, DAILY_LIMIT } from '@/lib/constants';
 import Header from '@/components/dashboard/header';
@@ -15,7 +15,7 @@ import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 const mapRawLeadToLead = (rawLead: RawLead): Lead => {
   const properties = rawLead.properties;
@@ -155,6 +155,17 @@ export default function MyLeadsPage() {
         }
     }
   }, []);
+  
+  const allCategories = useMemo(() => {
+    const categories = new Set<string>();
+    allLeads.forEach(lead => {
+        lead.industry.split(',').forEach(cat => {
+            const trimmedCat = cat.trim();
+            if(trimmedCat) categories.add(trimmedCat);
+        })
+    })
+    return Array.from(categories).sort();
+  }, [allLeads]);
 
   const loadFromLocalStorage = useCallback(() => {
     const today = new Date().toISOString().split('T')[0];
@@ -368,6 +379,7 @@ export default function MyLeadsPage() {
                     filters={filters}
                     onFilterChange={handleFilterChange}
                     locationHierarchy={locationHierarchy}
+                    allCategories={allCategories}
                 />
 
                 <UnearthButton
@@ -395,5 +407,3 @@ export default function MyLeadsPage() {
     </div>
   );
 }
-
-    
