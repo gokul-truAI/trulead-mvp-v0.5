@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -279,34 +280,7 @@ export default function MyLeadsPage() {
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Header />
       <main className="flex-grow container mx-auto px-4 py-8 flex flex-col">
-        <div className="w-full max-w-4xl mx-auto flex flex-col items-center gap-6">
-          <ProgressMeter unearthed={unearthedCount} limit={DAILY_LIMIT} />
-          
-          <LeadFilters 
-            filters={filters}
-            onFilterChange={handleFilterChange}
-            locationHierarchy={locationHierarchy}
-          />
-
-          <UnearthButton
-            onClick={handleUnearth}
-            isLoading={isLoading}
-            isLimitReached={isLimitReached}
-          />
-
-          {notification && (
-            <div className="w-full transition-all duration-300 ease-in-out animate-fade-in">
-              <Alert className="bg-primary/10 border-primary/20">
-                <Rocket className="h-4 w-4 text-primary" />
-                <AlertTitle className="text-primary font-semibold">Discovery Successful!</AlertTitle>
-                <AlertDescription className="text-primary/80">
-                  {notification}
-                </AlertDescription>
-              </Alert>
-            </div>
-          )}
-        </div>
-        <div className="w-full max-w-4xl mx-auto flex-grow mt-8 space-y-8">
+        <div className="w-full max-w-4xl mx-auto flex-grow space-y-8">
             <Card>
               <CardHeader>
                 <CardTitle>Your Lead Requests</CardTitle>
@@ -350,6 +324,35 @@ export default function MyLeadsPage() {
                 </Table>
               </CardContent>
             </Card>
+
+            <div className="w-full max-w-4xl mx-auto flex flex-col items-center gap-6">
+                <ProgressMeter unearthed={unearthedCount} limit={DAILY_LIMIT} />
+                
+                <LeadFilters 
+                    filters={filters}
+                    onFilterChange={handleFilterChange}
+                    locationHierarchy={locationHierarchy}
+                />
+
+                <UnearthButton
+                    onClick={handleUnearth}
+                    isLoading={isLoading}
+                    isLimitReached={isLimitReached}
+                />
+
+                {notification && (
+                    <div className="w-full transition-all duration-300 ease-in-out animate-fade-in">
+                    <Alert className="bg-primary/10 border-primary/20">
+                        <Rocket className="h-4 w-4 text-primary" />
+                        <AlertTitle className="text-primary font-semibold">Discovery Successful!</AlertTitle>
+                        <AlertDescription className="text-primary/80">
+                        {notification}
+                        </AlertDescription>
+                    </Alert>
+                    </div>
+                )}
+            </div>
+
             <DiscoveryLog leads={getFilteredLeads()} onUpdateLead={updateLead} />
         </div>
       </main>
