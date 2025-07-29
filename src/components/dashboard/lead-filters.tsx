@@ -30,10 +30,10 @@ export default function LeadFilters({
   locationHierarchy,
   categories,
 }: LeadFiltersProps) {
-  const continents = Object.keys(locationHierarchy);
-  const countries = filters.continent ? Object.keys(locationHierarchy[filters.continent]) : [];
-  const regions = (filters.continent && filters.country && locationHierarchy[filters.continent]?.[filters.country]) ? Object.keys(locationHierarchy[filters.continent][filters.country]) : [];
-  const cities = (filters.continent && filters.country && filters.region && locationHierarchy[filters.continent]?.[filters.country]?.[filters.region]) ? Object.keys(locationHierarchy[filters.continent][filters.country][filters.region]) : [];
+  const continents = Object.keys(locationHierarchy).filter(c => c);
+  const countries = filters.continent && locationHierarchy[filters.continent] ? Object.keys(locationHierarchy[filters.continent]).filter(c => c) : [];
+  const regions = (filters.continent && filters.country && locationHierarchy[filters.continent]?.[filters.country]) ? Object.keys(locationHierarchy[filters.continent][filters.country]).filter(r => r) : [];
+  const cities = (filters.continent && filters.country && filters.region && locationHierarchy[filters.continent]?.[filters.country]?.[filters.region]) ? Object.keys(locationHierarchy[filters.continent][filters.country][filters.region]).filter(c => c) : [];
 
 
   return (
@@ -63,7 +63,7 @@ export default function LeadFilters({
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="">All Continents</SelectItem>
-                        {continents.filter(c => c).map((continent) => (
+                        {continents.map((continent) => (
                         <SelectItem key={continent} value={continent}>
                             {continent}
                         </SelectItem>
@@ -77,7 +77,7 @@ export default function LeadFilters({
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="">All Countries</SelectItem>
-                        {countries.filter(c => c).map((country) => (
+                        {countries.map((country) => (
                         <SelectItem key={country} value={country}>
                             {country}
                         </SelectItem>
@@ -91,7 +91,7 @@ export default function LeadFilters({
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="">All Regions</SelectItem>
-                        {regions.filter(r => r).map((region) => (
+                        {regions.map((region) => (
                         <SelectItem key={region} value={region}>
                             {region}
                         </SelectItem>
@@ -105,7 +105,7 @@ export default function LeadFilters({
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="">All Cities</SelectItem>
-                        {cities.filter(c => c).map((city) => (
+                        {cities.map((city) => (
                         <SelectItem key={city} value={city}>
                             {city}
                         </SelectItem>
