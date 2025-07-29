@@ -86,14 +86,30 @@ export default function MyLeadsPage() {
     city: '',
     category: '',
   });
-
+  
+  // Set initial category from URL query parameter
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const category = params.get('category');
     if (category) {
-      handleFilterChange('category', category);
+        setFilters(prev => ({ ...prev, category }));
     }
   }, []);
+
+  // Update URL when category filter changes
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (filters.category) {
+        params.set('category', filters.category);
+    } else {
+        params.delete('category');
+    }
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    if (newUrl !== window.location.href) {
+       window.history.pushState({}, '', newUrl);
+    }
+  }, [filters.category]);
+
 
   // Effect to fetch initial data and populate filters
   useEffect(() => {
@@ -234,18 +250,6 @@ export default function MyLeadsPage() {
         } else if (filterType === 'region') {
             newFilters.city = '';
         }
-        
-        // Update URL for category changes to allow bookmarking/sharing
-        if (filterType === 'category') {
-            const params = new URLSearchParams(window.location.search);
-            if (value) {
-                params.set('category', value);
-            } else {
-                params.delete('category');
-            }
-            window.history.pushState({}, '', `${window.location.pathname}?${params.toString()}`);
-        }
-        
         return newFilters;
     });
   };
