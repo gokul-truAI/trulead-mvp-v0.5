@@ -68,18 +68,18 @@ export default function LeadCard({ lead, animationStyle, onUpdateLead }: LeadCar
           <AccordionItem value={lead.id} className="border-b-0">
             <AccordionTrigger className="p-4 hover:no-underline">
               <div className="flex flex-col md:flex-row md:items-center justify-between w-full text-left gap-4">
-                <div className="flex items-center gap-3 flex-grow">
-                    <div className="bg-primary/10 p-3 rounded-lg">
+                <div className="flex items-center gap-3 flex-grow min-w-0">
+                    <div className="bg-primary/10 p-3 rounded-lg flex-shrink-0">
                         <Building2 className="h-6 w-6 text-primary" />
                     </div>
-                    <div>
-                        <h3 className="font-bold text-lg text-primary">{lead.company}</h3>
+                    <div className="min-w-0">
+                        <h3 className="font-bold text-lg text-primary truncate">{lead.company}</h3>
                     </div>
                 </div>
-                <div className="flex flex-wrap gap-2 justify-start md:justify-end md:flex-shrink-0">
+                <div className="flex flex-wrap items-center gap-2 justify-start md:justify-end flex-shrink-0">
                   <StatusBadge status={lead.status} />
-                  <Badge variant="secondary"><Briefcase className="mr-1 h-3 w-3" />{lead.industry}</Badge>
-                  <Badge variant="secondary"><MapPin className="mr-1 h-3 w-3" />{lead.location}</Badge>
+                  <Badge variant="secondary" className="truncate"><Briefcase className="mr-1 h-3 w-3 flex-shrink-0" />{lead.industry}</Badge>
+                  <Badge variant="secondary" className="truncate"><MapPin className="mr-1 h-3 w-3 flex-shrink-0" />{lead.location}</Badge>
                 </div>
               </div>
             </AccordionTrigger>
