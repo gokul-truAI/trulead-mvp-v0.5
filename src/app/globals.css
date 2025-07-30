@@ -4,25 +4,25 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 220 14% 96%; /* gray-100 */
+    --foreground: 224 10% 10%; /* gray-900 */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 224 10% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 217 89% 61%;
+    --popover-foreground: 224 10% 10%;
+    --primary: 224 82% 53%; /* #2563eb */
     --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
+    --secondary: 220 13% 91%; /* gray-200 */
     --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 262 84% 60%;
+    --muted: 220 13% 91%;
+    --muted-foreground: 224 7% 40%; /* gray-600 */
+    --accent: 191 91% 37%; /* #0891b2 */
     --accent-foreground: 210 40% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 220 13% 91%; /* gray-200 */
+    --input: 220 13% 84%; /* gray-300 */
+    --ring: 224 82% 53%;
     --radius: 0.5rem;
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
@@ -32,19 +32,19 @@
   }
  
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 224 10% 10%; /* gray-900 */
     --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
+    --card: 224 10% 10%;
     --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
+    --popover: 224 10% 10%;
     --popover-foreground: 210 40% 98%;
-    --primary: 217 89% 61%;
+    --primary: 224 82% 53%;
     --primary-foreground: 222.2 47.4% 11.2%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 262 84% 60%;
+    --accent: 191 91% 37%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
