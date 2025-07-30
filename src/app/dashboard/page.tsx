@@ -1,20 +1,33 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import Header from '@/components/dashboard/header';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { PieChart, Pie, Cell } from 'recharts';
 import type { Lead, LeadRequest } from '@/lib/types';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import { Clock } from 'lucide-react';
 
 const COLORS = ['#4285F4', '#8E44AD', '#34A853', '#FBBC05', '#EA4335'];
+
+type Task = {
+  id: string;
+  company: string;
+  task: string;
+  date: Date;
+};
 
 export default function DashboardPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [leadRequests, setLeadRequests] = useState<LeadRequest[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const router = useRouter();
 
   useEffect(() => {
@@ -25,10 +38,22 @@ export default function DashboardPage() {
   }, [router]);
 
   useEffect(() => {
-    const savedLeads = localStorage.getItem('truLeadAiDisplayedLeads');
-    if (savedLeads && savedLeads !== 'undefined') {
+    const savedLeadsJSON = localStorage.getItem('truLeadAiDisplayedLeads');
+    if (savedLeadsJSON && savedLeadsJSON !== 'undefined') {
       try {
-        setLeads(JSON.parse(savedLeads));
+        const savedLeads: Lead[] = JSON.parse(savedLeadsJSON);
+        setLeads(savedLeads);
+
+        const upcomingTasks = savedLeads
+          .filter(lead => lead.nextTask && lead.nextTaskDate)
+          .map(lead => ({
+            id: lead.id,
+            company: lead.company,
+            task: lead.nextTask!,
+            date: new Date(lead.nextTaskDate!),
+          }));
+        setTasks(upcomingTasks);
+
       } catch (e) {
         console.error("Failed to parse leads from localStorage", e);
       }
@@ -69,11 +94,61 @@ export default function DashboardPage() {
     { name: 'Pending', value: pendingCount }
   ];
 
+  const taskDays = tasks.map(task => task.date);
+
+  const tasksForSelectedDay = selectedDate
+    ? tasks.filter(task => format(task.date, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd'))
+    : [];
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Header />
       <main className="flex-grow container mx-auto px-4 py-8">
         <h2 className="text-3xl font-bold mb-6">User Dashboard</h2>
+
+        <Card className="mb-6">
+            <CardHeader>
+                <CardTitle>Upcoming Tasks & Reminders</CardTitle>
+                <CardDescription>A consolidated view of your scheduled activities for the month.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                   <Calendar
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={setSelectedDate}
+                        modifiers={{ scheduled: taskDays }}
+                        modifiersClassNames={{ scheduled: 'bg-primary/20 rounded-full' }}
+                        className="rounded-md border"
+                    />
+                </div>
+                <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">
+                       Tasks for {selectedDate ? format(selectedDate, 'PPP') : '...'}
+                    </h3>
+                    {tasksForSelectedDay.length > 0 ? (
+                        <div className="space-y-3 h-72 overflow-y-auto pr-2">
+                        {tasksForSelectedDay.map(task => (
+                            <div key={task.id} className="p-3 bg-secondary/50 rounded-lg border border-primary/20">
+                                <h4 className="font-semibold text-primary flex items-center gap-2">
+                                  <Clock className="h-4 w-4" />
+                                  {task.company}
+                                </h4>
+                                <p className="text-foreground/90 pl-6">{task.task}</p>
+                                <Link href={`/leads`}>
+                                   <Button variant="link" size="sm" className="pl-6 h-auto">View Lead</Button>
+                                </Link>
+                            </div>
+                        ))}
+                        </div>
+                    ) : (
+                        <p className="text-muted-foreground pt-4 text-center">No tasks scheduled for this day.</p>
+                    )}
+                </div>
+            </CardContent>
+        </Card>
+
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Card>
             <CardHeader>
