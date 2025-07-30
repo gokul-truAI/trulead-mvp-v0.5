@@ -1,5 +1,9 @@
 
+'use client';
+
+import { useState } from 'react';
 import type { Lead, LeadStatus } from '@/lib/types';
+import { format } from 'date-fns';
 import {
   Accordion,
   AccordionContent,
@@ -10,10 +14,14 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
     Building2, Briefcase, MapPin, Mail, Link as LinkIcon, FileText,
-    Phone, Linkedin, Facebook, Calendar, Pin, Star, Repeat, XCircle, CheckCircle
+    Phone, Linkedin, Facebook, Calendar as CalendarIcon, Pin, Star, Repeat, XCircle, CheckCircle, Save, CalendarPlus, Pencil, Clock
 } from 'lucide-react';
 import AiInsight from './ai-insight';
 import { Button } from '../ui/button';
+import { Textarea } from '../ui/textarea';
+import { Input } from '../ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import { Calendar } from '../ui/calendar';
 import { cn } from '@/lib/utils';
 
 interface LeadCardProps {
@@ -45,6 +53,12 @@ const StatusBadge = ({ status }: { status: LeadStatus }) => {
 
 
 export default function LeadCard({ lead, animationStyle, onUpdateLead }: LeadCardProps) {
+  const [notes, setNotes] = useState(lead.notes || '');
+  const [nextTask, setNextTask] = useState(lead.nextTask || '');
+  const [nextTaskDate, setNextTaskDate] = useState<Date | undefined>(
+    lead.nextTaskDate ? new Date(lead.nextTaskDate) : undefined
+  );
+  
   const preventAction = (e: React.ClipboardEvent | React.MouseEvent) => {
     e.preventDefault();
     return false;
@@ -60,6 +74,15 @@ export default function LeadCard({ lead, animationStyle, onUpdateLead }: LeadCar
       onUpdateLead(lead.id, { browsed: true });
     }
   };
+
+  const handleSaveChanges = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onUpdateLead(lead.id, {
+          notes,
+          nextTask,
+          nextTaskDate: nextTaskDate?.toISOString()
+      });
+  }
   
   return (
     <div style={animationStyle} className="animate-fade-in opacity-0" onCopy={preventAction} onContextMenu={preventAction}>
@@ -90,9 +113,63 @@ export default function LeadCard({ lead, animationStyle, onUpdateLead }: LeadCar
                     <Button size="sm" variant="outline" onClick={(e) => handleStatusChange(e, 'follow-up')}><Repeat className="mr-2 h-4 w-4" />Need Follow-up</Button>
                     <Button size="sm" variant="outline" onClick={(e) => handleStatusChange(e, 'not-connected')}><XCircle className="mr-2 h-4 w-4" />Not Connected</Button>
                 </div>
+              
+              {lead.nextTask && lead.nextTaskDate && (
+                <div className="p-3 bg-secondary/50 rounded-lg border border-primary/20">
+                    <h4 className="font-semibold text-primary flex items-center gap-2"><Clock className="h-4 w-4" />Next Action</h4>
+                    <p className="text-foreground/90 pl-6">{lead.nextTask}</p>
+                    <p className="text-xs text-muted-foreground pl-6">Due: {format(new Date(lead.nextTaskDate), 'PPP')}</p>
+                </div>
+              )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div className="flex items-start gap-2 col-span-1 md:col-span-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-4 text-sm">
+                
+                <div className="col-span-1 md:col-span-2 space-y-2">
+                    <h4 className="font-medium flex items-center gap-2"><Pencil className="h-4 w-4 text-muted-foreground" /> Your Notes</h4>
+                    <Textarea 
+                        placeholder="Add your notes about this lead..."
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                        className="bg-background"
+                    />
+                </div>
+                
+                <div className="col-span-1 md:col-span-2 space-y-2">
+                    <h4 className="font-medium flex items-center gap-2"><CalendarPlus className="h-4 w-4 text-muted-foreground" /> Set Next Task & Reminder</h4>
+                     <Input 
+                        placeholder="e.g., 'Follow-up call with marketing manager'"
+                        value={nextTask}
+                        onChange={(e) => setNextTask(e.target.value)}
+                        className="bg-background"
+                    />
+                    <Popover>
+                        <PopoverTrigger asChild>
+                        <Button
+                            variant={"outline"}
+                            className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !nextTaskDate && "text-muted-foreground"
+                            )}
+                        >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {nextTaskDate ? format(nextTaskDate, "PPP") : <span>Pick a date</span>}
+                        </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                        <Calendar
+                            mode="single"
+                            selected={nextTaskDate}
+                            onSelect={setNextTaskDate}
+                            initialFocus
+                        />
+                        </PopoverContent>
+                    </Popover>
+                </div>
+                <div className="col-span-1 md:col-span-2 flex justify-end">
+                    <Button onClick={handleSaveChanges}><Save className="mr-2 h-4 w-4" /> Save Notes & Task</Button>
+                </div>
+
+                <div className="flex items-start gap-2 col-span-1 md:col-span-2 border-t pt-6">
                     <FileText className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                     <span className="font-medium whitespace-nowrap">Description:</span> 
                     <p className="flex-1 text-foreground/80">{lead.description}</p>
@@ -100,7 +177,7 @@ export default function LeadCard({ lead, animationStyle, onUpdateLead }: LeadCar
                 
                 <div className="flex items-center gap-2"><Mail className="h-4 w-4 text-muted-foreground" /><span className="font-medium">Email:</span> <span className="text-foreground/80 truncate">{lead.email}</span></div>
                 <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-muted-foreground" /><span className="font-medium">Phone:</span> <span className="text-foreground/80 truncate">{lead.phoneNumber}</span></div>
-                <div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-muted-foreground" /><span className="font-medium">Founded:</span> <span className="text-foreground/80">{lead.foundedOn}</span></div>
+                <div className="flex items-center gap-2"><CalendarIcon className="h-4 w-4 text-muted-foreground" /><span className="font-medium">Founded:</span> <span className="text-foreground/80">{lead.foundedOn}</span></div>
                 <div className="flex items-center gap-2"><Pin className="h-4 w-4 text-muted-foreground" /><span className="font-medium">Postal Code:</span> <span className="text-foreground/80">{lead.postalCode}</span></div>
 
                 <div className="flex items-center gap-2 col-span-1 md:col-span-2">

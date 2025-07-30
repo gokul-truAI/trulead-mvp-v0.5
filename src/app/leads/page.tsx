@@ -1,5 +1,6 @@
 
 
+
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
@@ -67,6 +68,9 @@ const mapRawLeadToLead = (rawLead: RawLead): Lead => {
     contactName: 'N/A',
     status: 'new',
     browsed: false,
+    notes: '',
+    nextTask: '',
+    nextTaskDate: '',
   };
 };
 

@@ -1,6 +1,7 @@
 
 
 
+
 export interface LocationIdentifier {
   location_type: string;
   value: string;
@@ -27,6 +28,9 @@ export interface Lead {
   foundedOn: string;
   status: LeadStatus;
   browsed: boolean;
+  notes?: string;
+  nextTask?: string;
+  nextTaskDate?: string;
 }
 
 export interface RawLead {
