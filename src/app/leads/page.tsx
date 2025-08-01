@@ -1,10 +1,8 @@
 
-
-
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import type { Lead, RawLead, LocationHierarchy, LeadStatus, LeadRequest } from '@/lib/types';
+import type { Lead, LeadRequest, UserCuratedFeed } from '@/lib/types';
 import { BATCH_SIZE, DAILY_LIMIT } from '@/lib/constants';
 import Header from '@/components/dashboard/header';
 import ProgressMeter from '@/components/dashboard/progress-meter';
@@ -19,80 +17,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-
-const mapRawLeadToLead = (rawLead: RawLead): Lead => {
-  const properties = rawLead.properties;
-
-  const categories =
-    properties.categories?.map((c) => c.value).join(', ') || 'N/A';
-
-  const city = properties.location_identifiers?.find(
-    (l) => l.location_type === 'city'
-  )?.value;
-  const region = properties.location_identifiers?.find(
-    (l) => l.location_type === 'region'
-  )?.value;
-  const country = properties.location_identifiers?.find(
-    (l) => l.location_type === 'country'
-  )?.value;
-  let location = 'N/A';
-  if (city && region && country) {
-    location = `${city}, ${region}, ${country}`;
-  } else {
-    location = properties.location_identifiers?.map((l) => l.value).join(', ') || 'N/A';
-  }
-
-  let foundedOn = 'N/A';
-  if (properties.founded_on?.value) {
-    try {
-      foundedOn = format(new Date(properties.founded_on.value), 'yyyy');
-    } catch (e) {
-      // Keep N/A if date is invalid
-    }
-  }
-
-  return {
-    id: rawLead.uuid,
-    company: properties.identifier?.value || 'N/A',
-    description: properties.short_description || 'No description available.',
-    industry: categories,
-    location: location,
-    locations: properties.location_identifiers || [],
-    email: properties.contact_email || 'N/A',
-    website: properties.website?.value || '#',
-    phoneNumber: properties.phone_number || 'N/A',
-    linkedin: properties.linkedin?.value || null,
-    facebook: properties.facebook?.value || null,
-    postalCode: properties.hq_postal_code || 'N/A',
-    foundedOn: foundedOn,
-    contactName: 'N/A',
-    status: 'new',
-    browsed: false,
-    notes: '',
-    nextTask: '',
-    nextTaskDate: '',
-  };
-};
+import { generateMockLead } from '@/lib/mock-data';
 
 export default function MyLeadsPage() {
-  const [allLeads, setAllLeads] = useState<Lead[]>([]);
   const [displayedLeads, setDisplayedLeads] = useState<Lead[]>([]);
-  const [unearthedIds, setUnearthedIds] = useState<Set<string>>(new Set());
   const [unearthedCount, setUnearthedCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [notification, setNotification] = useState<string | null>(null);
   const [requests, setRequests] = useState<LeadRequest[]>([]);
+  const [activeRequest, setActiveRequest] = useState<LeadRequest | null>(null);
   const router = useRouter();
-
-  // Filter state
-  const [locationHierarchy, setLocationHierarchy] = useState<LocationHierarchy>({});
-  const [filters, setFilters] = useState({
-    continent: '',
-    country: '',
-    region: '',
-    city: '',
-    category: '',
-  });
 
   useEffect(() => {
     const role = localStorage.getItem('truLeadAiUserRole');
@@ -101,121 +35,14 @@ export default function MyLeadsPage() {
     }
   }, [router]);
   
-  // Set initial category from URL query parameter
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const category = params.get('category');
-    if (category) {
-        setFilters(prev => ({ ...prev, category }));
-    }
-  }, []);
-
-  // Update URL when category filter changes
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (filters.category) {
-        params.set('category', filters.category);
-    } else {
-        params.delete('category');
-    }
-    const newUrl = `${window.location.pathname}?${params.toString()}`;
-    if (newUrl !== window.location.href) {
-       window.history.pushState({}, '', newUrl);
-    }
-  }, [filters.category]);
-
-
-  // Effect to fetch initial data and populate filters
-  useEffect(() => {
-    const fetchLeads = async () => {
-      try {
-        const response = await fetch('/data/leads.json');
-        const rawData = await response.json();
-        
-        if (rawData && Array.isArray(rawData.entities)) {
-            const mappedLeads = rawData.entities.map(mapRawLeadToLead);
-            setAllLeads(mappedLeads);
-  
-            // Extract filters
-            const newLocationHierarchy: LocationHierarchy = {};
-  
-            rawData.entities.forEach((lead: RawLead) => {
-              const continent = lead.properties.location_identifiers?.find(l => l.location_type === 'continent')?.value;
-              const country = lead.properties.location_identifiers?.find(l => l.location_type === 'country')?.value;
-              const region = lead.properties.location_identifiers?.find(l => l.location_type === 'region')?.value;
-              const city = lead.properties.location_identifiers?.find(l => l.location_type === 'city')?.value;
-
-              if (continent) {
-                if (!newLocationHierarchy[continent]) newLocationHierarchy[continent] = {};
-                if (country) {
-                  if (!newLocationHierarchy[continent][country]) newLocationHierarchy[continent][country] = {};
-                  if (region) {
-                    if (!newLocationHierarchy[continent][country][region]) newLocationHierarchy[continent][country][region] = {};
-                    if (city) {
-                      if (!newLocationHierarchy[continent][country][region][city]) {
-                        newLocationHierarchy[continent][country][region][city] = {};
-                      }
-                    }
-                  }
-                }
-              }
-            });
-  
-            setLocationHierarchy(newLocationHierarchy);
-  
-          } else {
-            console.error('Lead data is not in a recognized array format:', rawData);
-        }
-      } catch (error) {
-        console.error('Failed to load leads:', error);
-      }
-    };
-
-    fetchLeads();
-
-    const savedRequests = localStorage.getItem('truLeadAiLeadRequests');
-    if (savedRequests && savedRequests !== 'undefined') {
-        try {
-            const parsedRequests = JSON.parse(savedRequests);
-            if (Array.isArray(parsedRequests)) {
-                setRequests(parsedRequests.filter(r => r.status !== 'Pending'));
-            }
-        } catch (e) {
-            console.error("Failed to parse lead requests from localStorage", e);
-        }
-    }
-  }, []);
-  
-  const allCategories = useMemo(() => {
-    const categories = new Set<string>();
-    allLeads.forEach(lead => {
-        lead.industry.split(',').forEach(cat => {
-            const trimmedCat = cat.trim();
-            if(trimmedCat) categories.add(trimmedCat);
-        })
-    })
-    return Array.from(categories).sort();
-  }, [allLeads]);
-
   const loadFromLocalStorage = useCallback(() => {
     const today = new Date().toISOString().split('T')[0];
     const savedDate = localStorage.getItem('truLeadAiLastUnearthDate');
     const savedCount = localStorage.getItem('truLeadAiUnearthedCount');
-    const savedIds = localStorage.getItem('truLeadAiUnearthedIds');
     const savedLeads = localStorage.getItem('truLeadAiDisplayedLeads');
 
     if (savedDate === today) {
       if (savedCount) setUnearthedCount(parseInt(savedCount, 10));
-      if (savedIds && savedIds !== 'undefined') {
-          try {
-              const parsedIds = JSON.parse(savedIds);
-              if(Array.isArray(parsedIds)) {
-                setUnearthedIds(new Set<string>(parsedIds));
-              }
-          } catch(e) {
-              console.error("Failed to parse unearthed ids", e);
-          }
-      }
       if (savedLeads && savedLeads !== 'undefined') {
         try {
             const parsedLeads = JSON.parse(savedLeads);
@@ -229,19 +56,53 @@ export default function MyLeadsPage() {
     } else {
       localStorage.setItem('truLeadAiUnearthedCount', '0');
       localStorage.setItem('truLeadAiLastUnearthDate', today);
-      localStorage.setItem('truLeadAiUnearthedIds', '[]');
       localStorage.setItem('truLeadAiDisplayedLeads', '[]');
       setUnearthedCount(0);
-      setUnearthedIds(new Set());
       setDisplayedLeads([]);
     }
   }, []);
 
+  // Effect to load initial data
   useEffect(() => {
-    if (allLeads.length > 0) {
-      loadFromLocalStorage();
+    loadFromLocalStorage();
+    const savedRequests = localStorage.getItem('truLeadAiLeadRequests');
+    if (savedRequests && savedRequests !== 'undefined') {
+        try {
+            const parsedRequests = JSON.parse(savedRequests);
+            if (Array.isArray(parsedRequests)) {
+                setRequests(parsedRequests);
+            }
+        } catch (e) {
+            console.error("Failed to parse lead requests from localStorage", e);
+        }
     }
-  }, [allLeads, loadFromLocalStorage]);
+  }, [loadFromLocalStorage]);
+
+  // Handle setting active category from URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const requestId = params.get('request_id');
+    if (requestId) {
+        const foundRequest = requests.find(r => r.id === requestId);
+        if (foundRequest) {
+          setActiveRequest(foundRequest);
+        }
+    }
+  }, [requests]);
+
+  // Update URL when active request changes
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (activeRequest) {
+        params.set('request_id', activeRequest.id);
+    } else {
+        params.delete('request_id');
+    }
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    if (newUrl !== window.location.href) {
+       window.history.pushState({}, '', newUrl);
+    }
+  }, [activeRequest]);
 
 
   useEffect(() => {
@@ -250,73 +111,43 @@ export default function MyLeadsPage() {
       return () => clearTimeout(timer);
     }
   }, [notification]);
-
-  const handleFilterChange = (filterType: keyof typeof filters, value: string) => {
-    setFilters(prev => {
-        const newFilters = {...prev, [filterType]: value};
-        if (filterType === 'continent') {
-            newFilters.country = '';
-            newFilters.region = '';
-            newFilters.city = '';
-        } else if (filterType === 'country') {
-            newFilters.region = '';
-            newFilters.city = '';
-        } else if (filterType === 'region') {
-            newFilters.city = '';
-        }
-        return newFilters;
-    });
-  };
   
   const handleUnearth = useCallback(() => {
-    if (isLoading || unearthedCount >= DAILY_LIMIT || allLeads.length === 0) return;
+    if (isLoading || unearthedCount >= DAILY_LIMIT || !activeRequest) return;
     setIsLoading(true);
 
     setTimeout(() => {
-        const filteredLeads = allLeads.filter(lead => {
-            const { continent, country, region, city, category } = filters;
-            
-            const hasLocation = (type: string, value: string) => 
-                !value || lead.locations.some(l => l.location_type === type && l.value === value);
+      // In a real scenario, this would be an API call to the backend orchestration job.
+      // Here, we simulate the curation job by generating new, unique leads.
+      const curatedFeedJSON = localStorage.getItem('truLeadAiCuratedFeed');
+      const curatedFeed: UserCuratedFeed = curatedFeedJSON ? JSON.parse(curatedFeedJSON) : {};
+      
+      const leadsForRequest = curatedFeed[activeRequest.id] || [];
+      const alreadyDisplayedIds = new Set(displayedLeads.map(l => l.id));
+      
+      const availableLeads = leadsForRequest.filter(l => !alreadyDisplayedIds.has(l.id));
 
-            const hasCategory = !category || lead.industry.toLowerCase().includes(category.toLowerCase());
+      const leadsToUnearth = Math.min(BATCH_SIZE, DAILY_LIMIT - unearthedCount, availableLeads.length);
+      const newLeadsBatch = availableLeads.slice(0, leadsToUnearth);
 
-            return hasLocation('continent', continent) &&
-                   hasLocation('country', country) &&
-                   hasLocation('region', region) &&
-                   hasLocation('city', city) &&
-                   hasCategory;
-        });
-
-      const availableLeads = filteredLeads.filter(lead => !unearthedIds.has(lead.id));
-      const newLeadsBatch = [];
-      const newIds = new Set(unearthedIds);
-
-      for (let i = 0; i < BATCH_SIZE && availableLeads.length > 0; i++) {
-        const randomIndex = Math.floor(Math.random() * availableLeads.length);
-        const newLead = availableLeads.splice(randomIndex, 1)[0];
+      if (newLeadsBatch.length > 0) {
+        const newTotalUnearthed = unearthedCount + newLeadsBatch.length;
+        const newDisplayedLeads = [...newLeadsBatch, ...displayedLeads];
         
-        if (newLead) {
-          newLeadsBatch.push(newLead);
-          newIds.add(newLead.id);
-        }
+        setDisplayedLeads(newDisplayedLeads);
+        setUnearthedCount(newTotalUnearthed);
+        
+        localStorage.setItem('truLeadAiUnearthedCount', newTotalUnearthed.toString());
+        localStorage.setItem('truLeadAiDisplayedLeads', JSON.stringify(newDisplayedLeads));
+
+        setNotification(`${newLeadsBatch.length} new leads unearthed!`);
+      } else {
+        setNotification('No new leads available for this request.');
       }
-
-      const newTotalUnearthed = unearthedCount + newLeadsBatch.length;
-      const newDisplayedLeads = [...newLeadsBatch, ...displayedLeads];
       
-      setDisplayedLeads(newDisplayedLeads);
-      setUnearthedIds(newIds);
-      setUnearthedCount(newTotalUnearthed);
-      
-      localStorage.setItem('truLeadAiUnearthedCount', newTotalUnearthed.toString());
-      localStorage.setItem('truLeadAiUnearthedIds', JSON.stringify(Array.from(newIds)));
-      localStorage.setItem('truLeadAiDisplayedLeads', JSON.stringify(newDisplayedLeads));
-
       setIsLoading(false);
-      setNotification(newLeadsBatch.length > 0 ? `${newLeadsBatch.length} new leads unearthed!` : 'No new leads found with current filters.');
     }, 1500);
-  }, [allLeads, unearthedIds, unearthedCount, isLoading, filters, displayedLeads]);
+  }, [unearthedCount, isLoading, activeRequest, displayedLeads]);
 
   const updateLead = (leadId: string, updates: Partial<Lead>) => {
     const newDisplayedLeads = displayedLeads.map(lead => 
@@ -326,14 +157,28 @@ export default function MyLeadsPage() {
     localStorage.setItem('truLeadAiDisplayedLeads', JSON.stringify(newDisplayedLeads));
   };
 
-  const getFilteredLeads = () => {
-    if (!filters.category) {
+  const filteredLeads = useMemo(() => {
+    if (!activeRequest) {
         return displayedLeads;
     }
-    return displayedLeads.filter(lead => lead.industry.toLowerCase().includes(filters.category!.toLowerCase()));
+    return displayedLeads.filter(lead => lead.sourceRequestId === activeRequest.id);
+  }, [activeRequest, displayedLeads]);
+  
+  const handleSelectRequest = (request: LeadRequest) => {
+    if (request.status === 'Ready') {
+      setActiveRequest(request);
+      const newUrl = `${window.location.pathname}?request_id=${request.id}`;
+      window.history.pushState({}, '', newUrl);
+    }
+  };
+
+  const handleClearFilter = () => {
+    setActiveRequest(null);
+    const newUrl = window.location.pathname;
+    window.history.pushState({}, '', newUrl);
   };
   
-  const filteredLeads = getFilteredLeads();
+  const readyRequests = useMemo(() => requests.filter(r => r.status === 'Ready' || r.status === 'Completed'), [requests]);
   const isLimitReached = unearthedCount >= DAILY_LIMIT;
 
   return (
@@ -344,6 +189,7 @@ export default function MyLeadsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Your Lead Requests</CardTitle>
+                <CardDescription>Select a 'Ready' request to start unearthing leads.</CardDescription>
               </CardHeader>
               <CardContent className="overflow-x-auto">
                 <Table>
@@ -352,32 +198,32 @@ export default function MyLeadsPage() {
                       <TableHead>Category</TableHead>
                       <TableHead>Region</TableHead>
                       <TableHead>Date</TableHead>
+                      <TableHead>Leads</TableHead>
                       <TableHead>Status</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {requests.length > 0 ? requests.map((req) => (
-                      <TableRow key={req.id}>
+                      <TableRow key={req.id} 
+                        className={cn(
+                          req.status === 'Ready' && 'cursor-pointer hover:bg-muted/50',
+                          activeRequest?.id === req.id && 'bg-primary/10'
+                        )}
+                        onClick={() => handleSelectRequest(req)}
+                      >
                         <TableCell className="min-w-[150px]">{req.category}</TableCell>
                         <TableCell>{req.continent}</TableCell>
                         <TableCell>{format(new Date(req.requestDate), 'PP')}</TableCell>
+                        <TableCell>{req.leadCount}</TableCell>
                         <TableCell>
-                          {req.status === 'Ready' ? (
-                            <Button variant="link" size="sm" className="p-0 h-auto" onClick={() => handleFilterChange('category', req.category)}>
-                                <Badge variant="default" className="cursor-pointer hover:bg-primary/80">
-                                    {req.status}
-                                </Badge>
-                            </Button>
-                          ) : (
-                            <Badge variant={req.status === 'Processing' ? 'secondary' : 'outline'}>
+                            <Badge variant={req.status === 'Ready' ? 'default' : req.status === 'Processing' ? 'secondary' : 'outline'}>
                                 {req.status}
                             </Badge>
-                          )}
                         </TableCell>
                       </TableRow>
                     )) : (
                       <TableRow>
-                        <TableCell colSpan={4} className="text-center">No active requests. Approved requests will appear here.</TableCell>
+                        <TableCell colSpan={5} className="text-center">No active requests. Approved requests will appear here.</TableCell>
                       </TableRow>
                     )}
                   </TableBody>
@@ -389,21 +235,17 @@ export default function MyLeadsPage() {
                 <ProgressMeter 
                     unearthed={unearthedCount} 
                     limit={DAILY_LIMIT} 
-                    category={filters.category}
+                    category={activeRequest?.category}
                     categoryCount={filteredLeads.length}
                 />
                 
-                <LeadFilters 
-                    filters={filters}
-                    onFilterChange={handleFilterChange}
-                    locationHierarchy={locationHierarchy}
-                    allCategories={allCategories}
-                />
+                {activeRequest && <LeadFilters onClearFilter={handleClearFilter} activeRequest={activeRequest} />}
 
                 <UnearthButton
                     onClick={handleUnearth}
                     isLoading={isLoading}
                     isLimitReached={isLimitReached}
+                    disabled={!activeRequest}
                 />
 
                 {notification && (

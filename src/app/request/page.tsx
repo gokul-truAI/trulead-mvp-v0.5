@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -10,9 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import type { LeadRequest } from '@/lib/types';
+import type { LeadRequest, UserCuratedFeed, Lead } from '@/lib/types';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { generateMockLead } from '@/lib/mock-data';
 
 type FormInputs = {
   category: string;
@@ -20,6 +22,7 @@ type FormInputs = {
 };
 
 const continents = ['North America', 'South America', 'Europe', 'Asia', 'Africa', 'Australia', 'Antarctica'];
+const leadsPerRequest = 50; // Each approved request yields 50 leads for the user's feed.
 
 export default function RequestLeadsPage() {
   const { register, handleSubmit, setValue, formState: { errors }, watch, reset } = useForm<FormInputs>();
@@ -48,16 +51,27 @@ export default function RequestLeadsPage() {
         }
     }
     
-    // This interval mocks an external system (like an admin approval) processing the requests.
+    // This interval mocks the backend curation job.
+    // When an admin approves a request, its status becomes 'Processing'.
+    // This job finds 'Processing' requests, generates their leads, and sets them to 'Ready'.
     const interval = setInterval(() => {
       let requestsUpdated = false;
       const allRequests = JSON.parse(localStorage.getItem('truLeadAiLeadRequests') || '[]') as LeadRequest[];
+      const curatedFeedJSON = localStorage.getItem('truLeadAiCuratedFeed');
+      const curatedFeed: UserCuratedFeed = curatedFeedJSON ? JSON.parse(curatedFeedJSON) : {};
       
       const newRequests = allRequests.map(req => {
-          // Admin approves 'Pending' -> 'Processing'. This happens on the admin page now.
-          // This simulates the data gathering process.
           if (req.status === 'Processing') {
+              console.log(`Processing request ${req.id} for category ${req.category}`);
               requestsUpdated = true;
+
+              // Simulate lead generation for this request
+              const newLeads: Lead[] = [];
+              for (let i = 0; i < req.leadCount; i++) {
+                newLeads.push(generateMockLead(req));
+              }
+              curatedFeed[req.id] = newLeads;
+              
               return {...req, status: 'Ready' as const};
           }
           return req;
@@ -65,9 +79,10 @@ export default function RequestLeadsPage() {
 
       if (requestsUpdated) {
         localStorage.setItem('truLeadAiLeadRequests', JSON.stringify(newRequests));
+        localStorage.setItem('truLeadAiCuratedFeed', JSON.stringify(curatedFeed));
         setRequests(newRequests);
       }
-    }, 15000); // Check for updates every 15 seconds.
+    }, 5000); // Check for processing requests every 5 seconds.
 
     return () => clearInterval(interval);
   }, []);
@@ -77,8 +92,8 @@ export default function RequestLeadsPage() {
     setSubmissionMessage('');
 
     setTimeout(() => {
-        const currentRequestsJSON = localStorage.getItem('truLeadAiLeadRequests');
-        const currentRequests: LeadRequest[] = (currentRequestsJSON && currentRequestsJSON !== 'undefined') ? JSON.parse(currentRequestsJSON) : [];
+      const currentRequestsJSON = localStorage.getItem('truLeadAiLeadRequests');
+      const currentRequests: LeadRequest[] = (currentRequestsJSON && currentRequestsJSON !== 'undefined') ? JSON.parse(currentRequestsJSON) : [];
 
       const newRequest: LeadRequest = {
         id: new Date().getTime().toString(),
@@ -86,6 +101,7 @@ export default function RequestLeadsPage() {
         continent: data.continent,
         status: 'Pending',
         requestDate: new Date().toISOString(),
+        leadCount: leadsPerRequest
       };
       
       const updatedRequests = [...currentRequests, newRequest];
@@ -101,9 +117,6 @@ export default function RequestLeadsPage() {
   };
   
   const selectedContinent = watch('continent');
-
-  // Filter requests to show only those not in 'Pending' state for the user
-  const userVisibleRequests = requests.filter(r => r.status !== 'Pending');
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
@@ -150,7 +163,7 @@ export default function RequestLeadsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Track Your Requests</CardTitle>
-                 <CardDescription>Requests will appear here after admin approval.</CardDescription>
+                 <CardDescription>Your request history and status.</CardDescription>
               </CardHeader>
               <CardContent className="overflow-x-auto">
                 <Table>
@@ -163,14 +176,14 @@ export default function RequestLeadsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {userVisibleRequests.length > 0 ? userVisibleRequests.map((req) => (
+                    {requests.length > 0 ? requests.map((req) => (
                       <TableRow key={req.id}>
                         <TableCell className="min-w-[150px]">{req.category}</TableCell>
                         <TableCell>{req.continent}</TableCell>
                         <TableCell>{format(new Date(req.requestDate), 'PP')}</TableCell>
                         <TableCell>
                            {req.status === 'Ready' ? (
-                            <Link href={`/leads?category=${encodeURIComponent(req.category)}`}>
+                            <Link href={`/leads?request_id=${encodeURIComponent(req.id)}`}>
                                 <Badge variant="default" className="cursor-pointer hover:bg-primary/80">
                                     {req.status}
                                 </Badge>
@@ -184,7 +197,7 @@ export default function RequestLeadsPage() {
                       </TableRow>
                     )) : (
                       <TableRow>
-                        <TableCell colSpan={4} className="text-center">No approved requests yet.</TableCell>
+                        <TableCell colSpan={4} className="text-center">Submit a request to get started.</TableCell>
                       </TableRow>
                     )}
                   </TableBody>

@@ -1,7 +1,4 @@
 
-
-
-
 export interface LocationIdentifier {
   location_type: string;
   value: string;
@@ -31,6 +28,7 @@ export interface Lead {
   notes?: string;
   nextTask?: string;
   nextTaskDate?: string;
+  sourceRequestId: string; 
 }
 
 export interface RawLead {
@@ -79,7 +77,7 @@ export type LocationHierarchy = {
   };
 };
 
-export type LeadRequestStatus = 'Pending' | 'Processing' | 'Ready';
+export type LeadRequestStatus = 'Pending' | 'Processing' | 'Ready' | 'Completed';
 
 export type LeadRequest = {
   id: string;
@@ -87,4 +85,10 @@ export type LeadRequest = {
   continent: string;
   status: LeadRequestStatus;
   requestDate: string;
+  leadCount: number; // Number of leads this request can yield
 };
+
+// This represents the curated feed for a user, which would be a separate data store in the future.
+export type UserCuratedFeed = {
+  [requestId: string]: Lead[];
+}
