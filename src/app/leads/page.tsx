@@ -12,12 +12,13 @@ import LeadFilters from '@/components/dashboard/lead-filters';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Rocket } from 'lucide-react';
 import { format } from 'date-fns';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { generateMockLead } from '@/lib/mock-data';
+import { cn } from '@/lib/utils';
 
 export default function MyLeadsPage() {
   const [displayedLeads, setDisplayedLeads] = useState<Lead[]>([]);
