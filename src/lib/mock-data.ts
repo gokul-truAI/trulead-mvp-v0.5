@@ -7,7 +7,7 @@ let companyNameCounter = 0;
 
 export function generateMockLead(request: LeadRequest): Lead {
   companyNameCounter++;
-  const companyName = `${faker.company.name()} ${faker.company.bs Buzz()} ${companyNameCounter}`;
+  const companyName = `${faker.company.name()} ${faker.company.bsBuzz()} ${companyNameCounter}`;
   const website = `www.${companyName.toLowerCase().replace(/ /g, '').replace(/,/g, '')}.com`;
   
   return {
