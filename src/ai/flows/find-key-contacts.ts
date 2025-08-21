@@ -73,16 +73,24 @@ const findKeyContactsFlow = ai.defineFlow(
     // Simulate a web search by generating plausible mock data if the LLM fails.
     if (!output?.contacts || output.contacts.length === 0) {
       const companyDomain = input.company.toLowerCase().replace(/[^a-z0-9]/g, '') + '.com';
-      const companyTwitterHandle = input.company.toLowerCase().replace(/[^a-z0-9]/g, '');
-      const mockContacts = [
-        { name: 'Alex Johnson', title: 'CEO', email: `alex.j@${companyDomain}`, linkedin: `https://www.linkedin.com/in/alexjohnson`, twitter: `https://x.com/${companyTwitterHandle}ceo` },
-        { name: 'Samantha Miller', title: 'VP of Sales', email: `s.miller@${companyDomain}`, linkedin: `https://www.linkedin.com/in/samanthamiller` },
-        { name: 'David Chen', title: 'Head of Marketing', email: `david.c@${companyDomain}`, linkedin: `https://www.linkedin.com/in/davidchen`, twitter: `https://x.com/${companyTwitterHandle}mktg` },
-      ].slice(0, faker.number.int({min: 1, max: 3})); // Return a variable number of contacts
-      
-      // Sometimes, make a contact have no social media
-      if(mockContacts.length > 1) {
-          mockContacts[1].linkedin = undefined;
+      const mockContacts = [];
+      const numContacts = faker.number.int({ min: 1, max: 3 });
+
+      for (let i = 0; i < numContacts; i++) {
+        const firstName = faker.person.firstName();
+        const lastName = faker.person.lastName();
+        const title = faker.person.jobTitle();
+        const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@${companyDomain}`;
+        const linkedInUser = `${firstName}${lastName}`.toLowerCase();
+        const twitterUser = `${firstName.substring(0,1)}${lastName}`.toLowerCase();
+
+        mockContacts.push({
+            name: `${firstName} ${lastName}`,
+            title: title,
+            email: email,
+            linkedin: faker.datatype.boolean() ? `https://www.linkedin.com/in/${linkedInUser}` : undefined,
+            twitter: faker.datatype.boolean() ? `https://x.com/${twitterUser}` : undefined,
+        });
       }
 
       return { contacts: mockContacts };

@@ -1,54 +1,50 @@
 
 type LocationData = {
-  [region: string]: {
+  [continent: string]: {
     countries: {
       name: string;
-      states: {
-        name: string;
-        cities: string[];
-      }[];
+      cities: string[];
     }[];
   };
 };
 
 export const locations: LocationData = {
-  "US": {
+  "North America": {
     countries: [
-      {
-        name: "United States",
-        states: [
-          { name: "California", cities: ["Los Angeles", "San Francisco", "San Diego"] },
-          { name: "New York", cities: ["New York City", "Buffalo", "Rochester"] },
-          { name: "Texas", cities: ["Houston", "Austin", "Dallas"] },
-        ],
-      },
-    ],
+      { name: "USA", cities: ["New York", "San Francisco", "Austin", "Chicago", "Seattle"] },
+      { name: "Canada", cities: ["Toronto", "Vancouver", "Montreal"] },
+    ]
+  },
+  "South America": {
+    countries: [
+        { name: "Brazil", cities: ["São Paulo", "Rio de Janeiro"] },
+        { name: "Argentina", cities: ["Buenos Aires"] },
+    ]
   },
   "Europe": {
     countries: [
-      {
-        name: "United Kingdom",
-        states: [
-          { name: "England", cities: ["London", "Manchester", "Birmingham"] },
-          { name: "Scotland", cities: ["Edinburgh", "Glasgow"] },
-        ],
-      },
-      {
-        name: "Germany",
-        states: [
-          { name: "Berlin", cities: ["Berlin"] },
-          { name: "Bavaria", cities: ["Munich", "Nuremberg"] },
-        ],
-      },
-       {
-        name: "France",
-        states: [
-          { name: "Île-de-France", cities: ["Paris"] },
-          { name: "Provence-Alpes-Côte d'Azur", cities: ["Marseille", "Nice"] },
-        ],
-      },
+      { name: "United Kingdom", cities: ["London", "Manchester", "Edinburgh"] },
+      { name: "Germany", cities: ["Berlin", "Munich", "Hamburg"] },
+      { name: "France", cities: ["Paris", "Lyon", "Marseille"] },
     ],
   },
+  "Asia": {
+      countries: [
+          { name: "Japan", cities: ["Tokyo", "Osaka"]},
+          { name: "Singapore", cities: ["Singapore"]},
+          { name: "India", cities: ["Bangalore", "Mumbai"]},
+      ]
+  },
+  "Africa": {
+      countries: [
+          { name: "South Africa", cities: ["Cape Town", "Johannesburg"]},
+          { name: "Nigeria", cities: ["Lagos"]},
+          { name: "Kenya", cities: ["Nairobi"]},
+      ]
+  },
+  "Australia": {
+      countries: [
+          { name: "Australia", cities: ["Sydney", "Melbourne", "Brisbane"]},
+      ]
+  }
 };
-
-    
