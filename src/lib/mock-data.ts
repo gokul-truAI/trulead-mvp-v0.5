@@ -9,7 +9,10 @@ export function generateMockLead(request: LeadRequest): Lead {
   companyNameCounter++;
   const companyName = `${faker.company.name()} ${faker.company.bsBuzz()} ${companyNameCounter}`;
   const website = `www.${companyName.toLowerCase().replace(/ /g, '').replace(/,/g, '')}.com`;
-  
+  const firstName = faker.person.firstName();
+  const lastName = faker.person.lastName();
+  const emailDomain = website.startsWith('www.') ? website.substring(4) : website;
+
   return {
     id: faker.string.uuid(),
     company: companyName,
@@ -20,8 +23,8 @@ export function generateMockLead(request: LeadRequest): Lead {
       { location_type: 'country', value: faker.location.country(), uuid: faker.string.uuid(), entity_def_id: 'location' },
       { location_type: 'city', value: faker.location.city(), uuid: faker.string.uuid(), entity_def_id: 'location' },
     ],
-    contactName: faker.person.fullName(),
-    email: `contact@${website}`,
+    contactName: `${firstName} ${lastName}`,
+    email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@${emailDomain}`,
     website: `https://${website}`,
     description: faker.company.catchPhrase(),
     phoneNumber: faker.phone.number(),

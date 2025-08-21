@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -27,7 +28,7 @@ export default function KeyContacts({ lead, onUpdateLead }: KeyContactsProps) {
 
   useEffect(() => {
     const fetchContacts = async () => {
-      // Only fetch if contacts haven't been fetched before.
+      // Only fetch if contacts haven't been fetched before for this lead.
       if (lead.keyContacts) {
           setContacts(lead.keyContacts);
           return;
@@ -41,7 +42,7 @@ export default function KeyContacts({ lead, onUpdateLead }: KeyContactsProps) {
           description: lead.description,
         });
         setContacts(result.contacts);
-        // Persist the fetched contacts to the lead object
+        // Persist the fetched contacts to the lead object for this session
         onUpdateLead(lead.id, { keyContacts: result.contacts });
       } catch (e) {
         console.error('Failed to find key contacts:', e);
@@ -52,9 +53,9 @@ export default function KeyContacts({ lead, onUpdateLead }: KeyContactsProps) {
     };
 
     fetchContacts();
-  // We only want to run this when the lead ID changes.
+  // We want this to run whenever the lead ID changes, to fetch contacts for the new lead.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lead.id, lead.company, lead.description]);
+  }, [lead.id]);
 
   if (isLoading) {
     return (
@@ -107,7 +108,7 @@ export default function KeyContacts({ lead, onUpdateLead }: KeyContactsProps) {
   return (
     <div className="space-y-3">
         <h4 className="font-medium flex items-center gap-2"><UserSearch className="h-4 w-4 text-muted-foreground" /> AI Found Contacts</h4>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
         {contacts.map((contact, index) => (
             <div key={index} className="p-3 rounded-lg bg-secondary/30 border border-primary/10">
                 <p className="font-semibold text-primary">{contact.name}</p>

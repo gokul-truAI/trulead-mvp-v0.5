@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -16,6 +17,14 @@ export default function AiInsight({ lead }: AiInsightProps) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Only fetch insight if it hasn't been fetched before for this lead ID.
+    const storedInsight = sessionStorage.getItem(`insight_${lead.id}`);
+    if (storedInsight) {
+        setInsight(storedInsight);
+        setIsLoading(false);
+        return;
+    }
+
     const fetchInsight = async () => {
       setIsLoading(true);
       setError(null);
@@ -26,6 +35,7 @@ export default function AiInsight({ lead }: AiInsightProps) {
           description: lead.description,
         });
         setInsight(result.insight);
+        sessionStorage.setItem(`insight_${lead.id}`, result.insight);
       } catch (e) {
         console.error('Failed to generate insight:', e);
         setError('Could not generate insight at this time.');
@@ -35,7 +45,7 @@ export default function AiInsight({ lead }: AiInsightProps) {
     };
 
     fetchInsight();
-  }, [lead]);
+  }, [lead.id, lead.company, lead.industry, lead.description]);
 
   if (isLoading) {
     return (

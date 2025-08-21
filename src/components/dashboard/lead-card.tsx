@@ -126,95 +126,98 @@ export default function LeadCard({ lead, animationStyle, onUpdateLead }: LeadCar
                 </div>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-4 text-sm">
-                
-                <div className="flex items-start gap-2 col-span-1 md:col-span-2">
-                    <FileText className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                    <span className="font-medium whitespace-nowrap">Description:</span> 
-                    <p className="flex-1 text-foreground/80">{lead.description}</p>
-                </div>
-                
-                <div className="flex items-center gap-2"><Mail className="h-4 w-4 text-muted-foreground" /><span className="font-medium">Email:</span> <span className="text-foreground/80 truncate">{lead.email}</span></div>
-                <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-muted-foreground" /><span className="font-medium">Phone:</span> <span className="text-foreground/80 truncate">{lead.phoneNumber}</span></div>
-                <div className="flex items-center gap-2"><CalendarIcon className="h-4 w-4 text-muted-foreground" /><span className="font-medium">Founded:</span> <span className="text-foreground/80">{lead.foundedOn}</span></div>
-                <div className="flex items-center gap-2"><Pin className="h-4 w-4 text-muted-foreground" /><span className="font-medium">Postal Code:</span> <span className="text-foreground/80">{lead.postalCode}</span></div>
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-y-6 gap-x-8">
+                <div className="lg:col-span-3 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-4 text-sm">
+                        <div className="flex items-start gap-2 col-span-1 md:col-span-2">
+                            <FileText className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                            <span className="font-medium whitespace-nowrap">Description:</span> 
+                            <p className="flex-1 text-foreground/80">{lead.description}</p>
+                        </div>
+                        
+                        <div className="flex items-center gap-2"><Mail className="h-4 w-4 text-muted-foreground" /><span className="font-medium">Email:</span> <span className="text-foreground/80 truncate">{lead.email}</span></div>
+                        <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-muted-foreground" /><span className="font-medium">Phone:</span> <span className="text-foreground/80 truncate">{lead.phoneNumber}</span></div>
+                        <div className="flex items-center gap-2"><CalendarIcon className="h-4 w-4 text-muted-foreground" /><span className="font-medium">Founded:</span> <span className="text-foreground/80">{lead.foundedOn}</span></div>
+                        <div className="flex items-center gap-2"><Pin className="h-4 w-4 text-muted-foreground" /><span className="font-medium">Postal Code:</span> <span className="text-foreground/80">{lead.postalCode}</span></div>
 
-                <div className="flex items-center gap-2 col-span-1 md:col-span-2">
-                  <LinkIcon className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">Website:</span> 
-                  <a href={lead.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate">{lead.website}</a>
-                </div>
+                        <div className="flex items-center gap-2 col-span-1 md:col-span-2">
+                          <LinkIcon className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">Website:</span> 
+                          <a href={lead.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate">{lead.website}</a>
+                        </div>
 
-                <div className="col-span-1 md:col-span-2 flex items-center gap-4">
-                    <SocialLink href={lead.linkedin} icon={<Linkedin className="h-4 w-4" />} label="LinkedIn" />
-                    <SocialLink href={lead.facebook} icon={<Facebook className="h-4 w-4" />} label="Facebook" />
-                </div>
+                        <div className="col-span-1 md:col-span-2 flex items-center gap-4">
+                            <SocialLink href={lead.linkedin} icon={<Linkedin className="h-4 w-4" />} label="LinkedIn" />
+                            <SocialLink href={lead.facebook} icon={<Facebook className="h-4 w-4" />} label="Facebook" />
+                        </div>
 
-                <div className="col-span-1 md:col-span-2 space-y-1">
-                    <h4 className="font-medium flex items-center gap-2"><MapPin className="h-4 w-4 text-muted-foreground" /> Location Details</h4>
-                    <div className="pl-6 text-foreground/80">
-                        {lead.locations.map(loc => (
-                            <div key={loc.uuid} className="capitalize">
-                                <span className="font-semibold">{loc.location_type}:</span> {loc.value}
+                        <div className="col-span-1 md:col-span-2 space-y-1">
+                            <h4 className="font-medium flex items-center gap-2"><MapPin className="h-4 w-4 text-muted-foreground" /> Location Details</h4>
+                            <div className="pl-6 text-foreground/80">
+                                {lead.locations.map(loc => (
+                                    <div key={loc.uuid} className="capitalize">
+                                        <span className="font-semibold">{loc.location_type}:</span> {loc.value}
+                                    </div>
+                                ))}
                             </div>
-                        ))}
+                        </div>
+                    </div>
+
+                    <div className="border-t pt-4">
+                      {isExpanded && <KeyContacts lead={lead} onUpdateLead={onUpdateLead} />}
                     </div>
                 </div>
-              </div>
 
-              <div className="border-t pt-4">
-                {isExpanded && <KeyContacts lead={lead} onUpdateLead={onUpdateLead} />}
-              </div>
+                <div className="lg:col-span-2 space-y-6">
+                    <div className="p-4 rounded-lg bg-secondary/30 border">
+                        <AiInsight lead={lead} />
+                    </div>
 
-              <div className="border-t pt-4 grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-4 text-sm">
-                 <div className="col-span-1 md:col-span-2 space-y-2">
-                    <h4 className="font-medium flex items-center gap-2"><Pencil className="h-4 w-4 text-muted-foreground" /> Your Notes</h4>
-                    <Textarea 
-                        placeholder="Add your notes about this lead..."
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                        className="bg-background"
-                    />
-                </div>
-                
-                <div className="col-span-1 md:col-span-2 space-y-2">
-                    <h4 className="font-medium flex items-center gap-2"><CalendarPlus className="h-4 w-4 text-muted-foreground" /> Set Next Task & Reminder</h4>
-                     <Input 
-                        placeholder="e.g., 'Follow-up call with marketing manager'"
-                        value={nextTask}
-                        onChange={(e) => setNextTask(e.target.value)}
-                        className="bg-background"
-                    />
-                    <Popover>
-                        <PopoverTrigger asChild>
-                        <Button
-                            variant={"outline"}
-                            className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !nextTaskDate && "text-muted-foreground"
-                            )}
-                        >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {nextTaskDate ? format(nextTaskDate, "PPP") : <span>Pick a date</span>}
-                        </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                        <Calendar
-                            mode="single"
-                            selected={nextTaskDate}
-                            onSelect={setNextTaskDate}
-                            initialFocus
+                    <div className="space-y-2">
+                        <h4 className="font-medium flex items-center gap-2"><Pencil className="h-4 w-4 text-muted-foreground" /> Your Notes</h4>
+                        <Textarea 
+                            placeholder="Add your notes about this lead..."
+                            value={notes}
+                            onChange={(e) => setNotes(e.target.value)}
+                            className="bg-background"
                         />
-                        </PopoverContent>
-                    </Popover>
+                    </div>
+                    
+                    <div className="space-y-2">
+                        <h4 className="font-medium flex items-center gap-2"><CalendarPlus className="h-4 w-4 text-muted-foreground" /> Set Next Task & Reminder</h4>
+                         <Input 
+                            placeholder="e.g., 'Follow-up call with marketing manager'"
+                            value={nextTask}
+                            onChange={(e) => setNextTask(e.target.value)}
+                            className="bg-background"
+                        />
+                        <Popover>
+                            <PopoverTrigger asChild>
+                            <Button
+                                variant={"outline"}
+                                className={cn(
+                                "w-full justify-start text-left font-normal",
+                                !nextTaskDate && "text-muted-foreground"
+                                )}
+                            >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {nextTaskDate ? format(nextTaskDate, "PPP") : <span>Pick a date</span>}
+                            </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                            <Calendar
+                                mode="single"
+                                selected={nextTaskDate}
+                                onSelect={setNextTaskDate}
+                                initialFocus
+                            />
+                            </PopoverContent>
+                        </Popover>
+                    </div>
+                    <div className="flex justify-end">
+                        <Button onClick={handleSaveChanges}><Save className="mr-2 h-4 w-4" /> Save Notes & Task</Button>
+                    </div>
                 </div>
-                <div className="col-span-1 md:col-span-2 flex justify-end">
-                    <Button onClick={handleSaveChanges}><Save className="mr-2 h-4 w-4" /> Save Notes & Task</Button>
-                </div>
-              </div>
-              
-              <div className="border-t pt-4">
-                <AiInsight lead={lead} />
               </div>
             </AccordionContent>
           </AccordionItem>
