@@ -12,7 +12,8 @@ export interface KeyContact {
     name: string;
     title: string;
     email: string;
-    linkedin: string;
+    linkedin?: string;
+    twitter?: string;
 }
 
 export interface Lead {

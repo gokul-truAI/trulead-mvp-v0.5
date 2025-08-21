@@ -10,12 +10,14 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { faker } from '@faker-js/faker';
 
 const KeyContactSchema = z.object({
   name: z.string().describe('The full name of the key contact.'),
   title: z.string().describe("The job title of the key contact (e.g., 'CEO', 'Head of Marketing')."),
   email: z.string().email().describe("The professional email address of the key contact."),
-  linkedin: z.string().url().describe("The URL of the key contact's LinkedIn profile."),
+  linkedin: z.string().url().optional().describe("The full URL of the key contact's LinkedIn profile, if available."),
+  twitter: z.string().url().optional().describe("The full URL of the key contact's Twitter/X profile, if available.")
 });
 
 const FindKeyContactsInputSchema = z.object({
@@ -25,7 +27,7 @@ const FindKeyContactsInputSchema = z.object({
 export type FindKeyContactsInput = z.infer<typeof FindKeyContactsInputSchema>;
 
 const FindKeyContactsOutputSchema = z.object({
-  contacts: z.array(KeyContactSchema).describe('A list of key contacts found for the company.'),
+  contacts: z.array(KeyContactSchema).describe('A list of key contacts found for the company. If no contacts are found, return an empty array.'),
 });
 export type FindKeyContactsOutput = z.infer<typeof FindKeyContactsOutputSchema>;
 
@@ -39,13 +41,21 @@ const prompt = ai.definePrompt({
   output: { schema: FindKeyContactsOutputSchema },
   prompt: `You are an expert business intelligence analyst. Your goal is to identify the top 3 most relevant key contacts from a company based on the provided information.
 
+  Perform research on the web to find real, verifiable contact information. Do not invent or use placeholder details.
+
   Focus on leadership roles relevant to sales and marketing, such as CEO, Founder, Head of Sales, VP of Marketing, etc.
+
+  For each contact, find the following information:
+  - Full Name
+  - Job Title
+  - Professional Email Address
+  - **Social Profiles**: Prioritize finding their LinkedIn and Twitter/X profiles. The URLs must be complete and valid, including the "https://" prefix. If a profile cannot be found, omit the field.
 
   Company Information:
   - Name: {{company}}
   - Description: {{description}}
 
-  Based on this, find up to 3 key contacts and provide their name, title, email, and LinkedIn profile URL. Ensure the LinkedIn URL is a full, valid URL starting with https://.
+  Return an empty array if you cannot find any verifiable key contacts.
   `,
 });
 
@@ -63,11 +73,18 @@ const findKeyContactsFlow = ai.defineFlow(
     // Simulate a web search by generating plausible mock data if the LLM fails.
     if (!output?.contacts || output.contacts.length === 0) {
       const companyDomain = input.company.toLowerCase().replace(/[^a-z0-9]/g, '') + '.com';
+      const companyTwitterHandle = input.company.toLowerCase().replace(/[^a-z0-9]/g, '');
       const mockContacts = [
-        { name: 'Alex Johnson', title: 'CEO', email: `alex.j@${companyDomain}`, linkedin: `https://www.linkedin.com/in/alexjohnson` },
+        { name: 'Alex Johnson', title: 'CEO', email: `alex.j@${companyDomain}`, linkedin: `https://www.linkedin.com/in/alexjohnson`, twitter: `https://x.com/${companyTwitterHandle}ceo` },
         { name: 'Samantha Miller', title: 'VP of Sales', email: `s.miller@${companyDomain}`, linkedin: `https://www.linkedin.com/in/samanthamiller` },
-        { name: 'David Chen', title: 'Head of Marketing', email: `david.c@${companyDomain}`, linkedin: `https://www.linkedin.com/in/davidchen` },
-      ];
+        { name: 'David Chen', title: 'Head of Marketing', email: `david.c@${companyDomain}`, linkedin: `https://www.linkedin.com/in/davidchen`, twitter: `https://x.com/${companyTwitterHandle}mktg` },
+      ].slice(0, faker.number.int({min: 1, max: 3})); // Return a variable number of contacts
+      
+      // Sometimes, make a contact have no social media
+      if(mockContacts.length > 1) {
+          mockContacts[1].linkedin = undefined;
+      }
+
       return { contacts: mockContacts };
     }
     
