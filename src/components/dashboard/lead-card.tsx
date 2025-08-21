@@ -24,6 +24,7 @@ import { Input } from '../ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Calendar } from '../ui/calendar';
 import { cn } from '@/lib/utils';
+import MarketAnalysis from './market-analysis';
 
 interface LeadCardProps {
   lead: Lead;
@@ -163,16 +164,6 @@ export default function LeadCard({ lead, animationStyle, onUpdateLead }: LeadCar
                         </div>
                     </div>
 
-                    <div className="border-t pt-4">
-                      {isExpanded && <KeyContacts lead={lead} onUpdateLead={onUpdateLead} />}
-                    </div>
-                </div>
-
-                <div className="lg:col-span-2 space-y-6">
-                    <div className="p-4 rounded-lg bg-secondary/30 border">
-                        <AiInsight lead={lead} />
-                    </div>
-
                     <div className="space-y-2">
                         <h4 className="font-medium flex items-center gap-2"><Pencil className="h-4 w-4 text-muted-foreground" /> Your Notes</h4>
                         <Textarea 
@@ -216,6 +207,16 @@ export default function LeadCard({ lead, animationStyle, onUpdateLead }: LeadCar
                     </div>
                     <div className="flex justify-end">
                         <Button onClick={handleSaveChanges}><Save className="mr-2 h-4 w-4" /> Save Notes & Task</Button>
+                    </div>
+                </div>
+
+                <div className="lg:col-span-2 space-y-6">
+                    <div className="p-4 rounded-lg bg-secondary/30 border space-y-4">
+                        <AiInsight lead={lead} />
+                        {isExpanded && <MarketAnalysis lead={lead} onUpdateLead={onUpdateLead} />}
+                    </div>
+                     <div className="border-t pt-4">
+                      {isExpanded && <KeyContacts lead={lead} onUpdateLead={onUpdateLead} />}
                     </div>
                 </div>
               </div>

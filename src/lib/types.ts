@@ -16,6 +16,11 @@ export interface KeyContact {
     twitter?: string;
 }
 
+export interface MarketAnalysis {
+  confidenceScore: number;
+  analysisNote: string;
+}
+
 export interface Lead {
   id: string;
   company: string;
@@ -38,6 +43,7 @@ export interface Lead {
   nextTaskDate?: string;
   sourceRequestId: string;
   keyContacts?: KeyContact[];
+  marketAnalysis?: MarketAnalysis;
 }
 
 export interface RawLead {

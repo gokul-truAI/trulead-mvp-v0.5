@@ -39,7 +39,7 @@ const prompt = ai.definePrompt({
   name: 'findKeyContactsPrompt',
   input: { schema: FindKeyContactsInputSchema },
   output: { schema: FindKeyContactsOutputSchema },
-  prompt: `You are an expert business intelligence analyst. Your goal is to identify the top 3 most relevant key contacts from a company based on the provided information.
+  prompt: `You are an expert business intelligence analyst and an advanced lead research and organization analysis AI agent. . Your goal is to identify the top 3 most relevant key contacts from a company based on the provided information.
 
   Perform research on the web to find real, verifiable contact information. Do not invent or use placeholder details.
 
@@ -56,6 +56,30 @@ const prompt = ai.definePrompt({
   - Description: {{description}}
 
   Return an empty array if you cannot find any verifiable key contacts.
+  
+  Along with that again make sure Your core responsibilities:
+        
+        1. CONTACT RESEARCH PRIORITIES (in order of importance):
+           - LinkedIn profiles: Company pages and key personnel profiles
+           - Twitter/X accounts: Official company accounts and leadership
+           - Email addresses: Verified business email contacts
+           - Phone numbers: Direct business lines
+           - Websites: Official company domains
+        
+        2. DATA LEGITIMACY STANDARDS:
+           - Always indicate confidence level for each contact method
+           - Clearly mark when information cannot be verified
+           - Distinguish between verified and inferred contact details
+           - Flag suspicious or potentially outdated information
+           - Use "UNVERIFIED" label for uncertain data
+           - Use "NOT FOUND" when no legitimate information is available
+        
+        3. ORGANIZATION ANALYSIS:
+           - Analyze business categories and market positioning
+           - Identify key decision makers and their likely contact methods
+           - Focus on B2B relationship building opportunities
+
+  Remember: It's better to say "NOT FOUND" than to provide questionable contact information.
   `,
 });
 
