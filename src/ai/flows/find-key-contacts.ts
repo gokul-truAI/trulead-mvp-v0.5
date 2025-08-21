@@ -45,7 +45,7 @@ const prompt = ai.definePrompt({
   - Name: {{company}}
   - Description: {{description}}
 
-  Based on this, find up to 3 key contacts and provide their name, title, email, and LinkedIn profile URL.
+  Based on this, find up to 3 key contacts and provide their name, title, email, and LinkedIn profile URL. Ensure the LinkedIn URL is a full, valid URL starting with https://.
   `,
 });
 
