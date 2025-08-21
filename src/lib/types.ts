@@ -8,6 +8,13 @@ export interface LocationIdentifier {
 
 export type LeadStatus = 'new' | 'high-potential' | 'follow-up' | 'not-connected';
 
+export interface KeyContact {
+    name: string;
+    title: string;
+    email: string;
+    linkedin: string;
+}
+
 export interface Lead {
   id: string;
   company: string;
@@ -28,7 +35,8 @@ export interface Lead {
   notes?: string;
   nextTask?: string;
   nextTaskDate?: string;
-  sourceRequestId: string; 
+  sourceRequestId: string;
+  keyContacts?: KeyContact[];
 }
 
 export interface RawLead {

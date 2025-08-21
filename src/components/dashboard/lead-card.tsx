@@ -17,6 +17,7 @@ import {
     Phone, Linkedin, Facebook, Calendar as CalendarIcon, Pin, Star, Repeat, XCircle, CheckCircle, Save, CalendarPlus, Pencil, Clock
 } from 'lucide-react';
 import AiInsight from './ai-insight';
+import KeyContacts from './key-contacts';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 import { Input } from '../ui/input';
@@ -58,6 +59,7 @@ export default function LeadCard({ lead, animationStyle, onUpdateLead }: LeadCar
   const [nextTaskDate, setNextTaskDate] = useState<Date | undefined>(
     lead.nextTaskDate ? new Date(lead.nextTaskDate) : undefined
   );
+  const [isExpanded, setIsExpanded] = useState(false);
   
   const preventAction = (e: React.ClipboardEvent | React.MouseEvent) => {
     e.preventDefault();
@@ -69,7 +71,9 @@ export default function LeadCard({ lead, animationStyle, onUpdateLead }: LeadCar
     onUpdateLead(lead.id, { status: newStatus });
   }
 
-  const handleAccordionToggle = (isOpen: boolean) => {
+  const handleAccordionToggle = (value: string) => {
+    const isOpen = !!value;
+    setIsExpanded(isOpen);
     if (isOpen && !lead.browsed) {
       onUpdateLead(lead.id, { browsed: true });
     }
@@ -87,7 +91,7 @@ export default function LeadCard({ lead, animationStyle, onUpdateLead }: LeadCar
   return (
     <div style={animationStyle} className="animate-fade-in opacity-0" onCopy={preventAction} onContextMenu={preventAction}>
       <Card className={cn("user-select-none shadow-md hover:shadow-xl transition-all duration-300", lead.browsed && "opacity-70 blur-[0.5px]")}>
-        <Accordion type="single" collapsible onValueChange={(value) => handleAccordionToggle(!!value)}>
+        <Accordion type="single" collapsible onValueChange={handleAccordionToggle}>
           <AccordionItem value={lead.id} className="border-b-0">
             <AccordionTrigger className="p-4 hover:no-underline">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between w-full text-left gap-4">
@@ -156,6 +160,10 @@ export default function LeadCard({ lead, animationStyle, onUpdateLead }: LeadCar
                         ))}
                     </div>
                 </div>
+              </div>
+
+              <div className="border-t pt-4">
+                {isExpanded && <KeyContacts lead={lead} onUpdateLead={onUpdateLead} />}
               </div>
 
               <div className="border-t pt-4 grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-4 text-sm">
